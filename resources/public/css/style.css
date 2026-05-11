@@ -1,0 +1,6 @@
+/* some style */
+
+@import "tailwindcss";
+@plugin "daisyui" {
+    themes: light --default, dark --prefersdark, cupcake, corporate, dracula, retro, synthwave, abyss, winter, silk
+};
