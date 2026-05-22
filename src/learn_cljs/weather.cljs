@@ -5,7 +5,6 @@
    [learn-cljs.data :as d]
    [learn-cljs.util :refer [get!]]))
 
-
 (defonce app-view (r/atom {:view :home}))
 
 (defn workout [workout-id]
