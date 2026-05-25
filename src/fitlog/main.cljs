@@ -1,9 +1,9 @@
-(ns learn-cljs.weather
+(ns fitlog.main
   (:require
    [reagent.core :as r]
    [reagent.dom.client :as rdc]
-   [learn-cljs.data :as d]
-   [learn-cljs.util :refer [get!]]))
+   [fitlog.data :as d]
+   [fitlog.util :refer [get!]]))
 
 (defonce app-view (r/atom {:view :home}))
 

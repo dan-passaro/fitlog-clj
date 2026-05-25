@@ -1,4 +1,4 @@
-(ns learn-cljs.data
+(ns fitlog.data
   (:require
    [reagent.core :as r]))
 

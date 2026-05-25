@@ -1,4 +1,4 @@
-(ns learn-cljs.util)
+(ns fitlog.util)
 
 (defn get!
   "Like get, but throw an error on missing key"

@@ -1,7 +1,7 @@
-(ns learn-cljs.weather-test
+(ns fitlog.main-test
     (:require
      [cljs.test :refer-macros [deftest is testing]]
-     [learn-cljs.weather :refer [multiply]]))
+     [fitlog.main :refer [multiply]]))
 
 (deftest multiply-test
   (is (= (* 1 2) (multiply 1 2))))
