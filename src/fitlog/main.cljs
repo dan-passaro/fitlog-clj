@@ -7,6 +7,9 @@
 
 (defonce app-view (r/atom {:view :home}))
 
+(defn multiply [a b]
+  (* a b))
+
 (defn workout [workout-id]
   (let [self (get @d/workouts workout-id)]
     [:<>

@@ -4,15 +4,7 @@
         cljsjs/react {:mvn/version "18.3.1-1"}
         cljsjs/react-dom {:mvn/version "18.3.1-1"}
         reagent/reagent {:mvn/version "2.0.1" }}
- :paths ["src" "resources"]
- :aliases {:fig {:extra-deps
-                 {com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
-                  com.bhauman/figwheel-main {:mvn/version "0.2.20"}
-                  org.slf4j/slf4j-nop {:mvn/version "2.0.16"}}
-                 :extra-paths ["target" "test"]}
-           :build {:main-opts ["-m" "figwheel.main" "-b" "dev" "-r"]}
-           :clean {:main-opts ["-m" "figwheel.main" "--clean" "dev"]}
-           :min   {:main-opts ["-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]}
-           :test  {:main-opts ["-m" "figwheel.main" "-co" "test.cljs.edn" "-m" "fitlog.test-runner"]}
-           :dev {:extra-deps {thheller/shadow-cljs {:mvn/version "3.4.9"}
+ :paths ["src" "test" "resources"]
+
+ :aliases {:dev {:extra-deps {thheller/shadow-cljs {:mvn/version "3.4.9"}
                               cider/cider-nrepl {:mvn/version "0.59.0"}}}}}

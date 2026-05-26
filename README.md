@@ -6,21 +6,25 @@ An offline-only fitness tracker progressive webapp.
 
 To get an interactive development environment run:
 
-    clojure -A:fig:build
+    npx shadow-cljs -A:dev watch app
 
-This will auto compile and send all changes to the browser without the
-need to reload. After the compilation process is complete, you will
-get a Browser Connected REPL. An easy way to try it is:
+Then visit http://localhost:8081/ to use the app.
 
-    (js/alert "Am I connected?")
+### Tests
 
-and you should see an alert in the browser window.
+To run unit tests, use
 
-To clean all compiled files:
+    npx shadow-cljs -A:dev compile test
 
-    rm -rf target/public
+Then visit http://localhost:3001 to see results.
 
-To create a production build run:
+(NOT IMPLEMENTED) To run end-to-end tests, use
 
-	rm -rf target/public
-	clojure -A:fig:min
+    npx shadow-cljs -A:dev compile e2e-test
+
+The tests will run automatically.
+
+### CIDER
+
+A `.dir-locals.el` file is included which makes the Emacs
+`M-x cider-jack-in-cljs` autofilled; one extra return keypress is needed to confirm the preselected `shadow` REPL type.

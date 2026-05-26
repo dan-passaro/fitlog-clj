@@ -16,3 +16,4 @@ resources/public/cljs-out/
 .shadow-cljs/
 node_modules/
 public/
+resources/test
