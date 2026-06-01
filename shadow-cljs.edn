@@ -1,6 +1,6 @@
 {:deps   true
- :dev-http {3001 ["out/test"]
-            8081 ["resources/public" "public"]}
+ :dev-http {8081 ["resources/public" "public"]
+            9001 ["out/test"]}
  :builds {:app {:target     :browser
                 :output-dir "public/js"
                 :asset-path "/js"

@@ -6,7 +6,7 @@ An offline-only fitness tracker progressive webapp.
 
 To get an interactive development environment run:
 
-    npx shadow-cljs -A:dev watch app
+    just dev
 
 Then visit http://localhost:8081/ to use the app.
 
@@ -14,15 +14,11 @@ Then visit http://localhost:8081/ to use the app.
 
 To run unit tests, use
 
-    npx shadow-cljs -A:dev compile test
+    just test
 
-Then visit http://localhost:3001 to see results.
+To run end-to-end tests, use
 
-(NOT IMPLEMENTED) To run end-to-end tests, use
-
-    npx shadow-cljs -A:dev compile e2e-test
-
-The tests will run automatically.
+    just test-e2e
 
 ### CIDER
 
