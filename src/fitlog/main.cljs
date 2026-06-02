@@ -51,5 +51,20 @@
 (defonce root
   (rdc/create-root (.getElementById js/document "app")))
 
+(defn persist-data
+  "Save data to local storage."
+  [key ref old-state new-state]
+  (js/localStorage.setItem "fitlog-data"
+                           (js/JSON.stringify (clj->js new-state))))
+
+(defn load-user-data
+  "Update d/workouts from the browser's local storage."
+  []
+  (when-let [data-json (js/localStorage.getItem "fitlog-data")]
+    (let [data (js->clj (js/JSON.parse data-json) :keywordize-keys true)]
+      (reset! d/workouts data))))
+
 (defn ^:dev/after-load init []
+  (load-user-data)
+  (add-watch d/workouts nil persist-data)
   (rdc/render root [show]))
