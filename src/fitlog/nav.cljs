@@ -5,7 +5,7 @@
    [fitlog.data :as d]
    [fitlog.util :refer [get!]]))
 
-(defonce app-view (r/atom {:view :home}))
+(defonce app-view (r/atom nil))
 
 (defn navigate-to [route & options]
   (reset! app-view (apply array-map :view route options)))

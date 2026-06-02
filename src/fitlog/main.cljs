@@ -2,37 +2,20 @@
   (:require
    [reagent.core :as r]
    [reagent.dom.client :as rdc]
+   [reitit.frontend :as rf]
+   [reitit.frontend.easy :as rfe]
    [fitlog.data :as d]
+   [fitlog.router :as router]
    [fitlog.ui.lib :refer [h2]]
    [fitlog.ui.workout :refer [workout]]
-   [fitlog.nav :refer [app-view navigate-to]]
+   [fitlog.nav :refer [app-view]]
    [fitlog.util :refer [get!]]))
 
-(defn workouts []
-  [:<>
-   [h2 "Workouts"]
-   (map-indexed
-    (fn [idx workout]
-      ^{:key idx}
-      [:p [:a {:class "link link-primary"
-               :on-click #(navigate-to :workout :workout-id idx)}
-           (str "Workout " idx ": " workout)]])
-    (get @d/data :workouts))
-   (when (empty? (get @d/data :workouts))
-     [:p "No workouts. Create one to get started!"])
-   [:p {:class "flex justify-center"}
-    [:button {:class    "btn btn-primary w-64"
-              :on-click (fn []
-                          (js/console.log "data is:" (clj->js @d/data))
-                          (swap! d/data update :workouts conj (d/make-workout))
-                          (navigate-to :workout :workout-id (dec (count (get @d/data :workouts)))))}
-     "New Workout"]]])
-
 (defn show []
-  (case (:view @app-view)
-     :home [workouts]
-     :workouts [workouts]
-     :workout [workout (get! @app-view :workout-id)]))
+  (if-let [view (:view (:data @app-view))]
+    (let [params (:path-params @app-view)]
+      [view params])
+    [:p "Unknown route"]))
 
 (defonce root
   (rdc/create-root (.getElementById js/document "app")))
@@ -53,4 +36,5 @@
 (defn ^:dev/after-load init []
   (load-user-data)
   (add-watch d/data nil persist-data)
+  (router/setup-router)
   (rdc/render root [show]))

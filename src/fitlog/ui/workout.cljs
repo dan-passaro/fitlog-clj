@@ -1,23 +1,25 @@
 (ns fitlog.ui.workout
   (:require
-   [reagent.core :as r]
-   [reagent.dom.client :as rdc]
+   [reitit.frontend.easy :as rfe]
    [fitlog.data :as d]
-   [fitlog.nav :refer [navigate-to]]
-   [fitlog.ui.lib :refer [h2 human-date-str]]
-   [fitlog.util :refer [get!]]))
+   [fitlog.routes :as routes]
+   [fitlog.ui.lib :refer [h2 human-date-str]]))
 
-(defn- primary-btn [& {:keys [text on-click]}]
+(defn- primary-btn [& {:keys [text on-click href]}]
   (let [opts (cond-> {:class "btn btn-primary"}
-               on-click (assoc :on-click on-click))]
-    [:button opts text]))
+               on-click (assoc :on-click on-click)
+               href (assoc :href href))
+        elt (if href :a :button)]
+    [elt opts text]))
 
-(defn workout [workout-id]
-  (let [self (get-in @d/data [:workouts workout-id])]
+(defn workout [& {:keys [id]}]
+  (let [self (get-in @d/data [:workouts (int id)])]
     [:<>
      [h2 (human-date-str (:createdAt self))]
      [:p "No exercises. Add an exercise to get started!"]
-     [primary-btn :text "Add Exercise"
-      :on-click #(navigate-to :add-exercise :workout-id workout-id)]
-     [primary-btn :text "Back"
-      :on-click #(navigate-to :home)]]))
+     [primary-btn
+      :href (rfe/href routes/add-exercise {:id id})
+      :text "Add Exercise"]
+     [primary-btn
+      :text "Back"
+      :href (rfe/href routes/workouts)]]))
