@@ -6,5 +6,6 @@
    [fitlog.ui.lib :refer [h2]]))
 
 (defn add-exercise [& {:keys [id]}]
-  [h2 "Add Exercise"]
-  [:p "...not yet implemented"])
+  [:<>
+   [h2 "Choose an exercise"]
+   [:p "...not yet implemented"]])
