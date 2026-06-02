@@ -9,6 +9,7 @@
 
 (use-fixtures :each {:after rtl/cleanup})
 
+
 (defn set-workouts! [& workouts]
   (swap! d/data assoc :workouts workouts))
 
@@ -29,3 +30,11 @@
       (.click rtl/fireEvent (.getByText c "Back"))
       (r/flush)
       (is (= :home (get-nav))))))
+
+(deftest test-add-exercise
+  (testing "allows adding an exercise"
+    (set-workouts! (d/make-workout))
+    (let [c (render [workout 0])]
+      (.click rtl/fireEvent (.getByText c "Add Exercise"))
+      (r/flush)
+      (is (= [:add-exercise {:workout-id 0}] (get-nav))))))
