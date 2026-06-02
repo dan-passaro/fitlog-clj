@@ -1,9 +1,19 @@
 tailwind_cmd := "pnpm tailwindcss -i resources/public/css/style.css -o public/css/main.css --watch"
 
+default:
+    just --list
+
 dev:
-    parallel --ungroup ::: \
-        "{{tailwind_cmd}}" \
-        "pnpm shadow-cljs -A:dev watch :app"
+    #!/usr/bin/env sh
+    if nc -z localhost 8081
+    then
+      echo "Dev server already running"
+    else
+      trap 'kill 0' SIGINT
+      {{tailwind_cmd}} &
+      pnpm shadow-cljs -A:dev watch :app &
+      wait
+    fi
 
 watch-css:
     {{tailwind_cmd}}

@@ -1,6 +1,11 @@
 {:deps   true
  :dev-http {8081 ["resources/public" "public"]
             9001 ["out/test"]}
+
+ ;; Prevents weird "zip file closed" exceptions in the server
+ ;; UPDATE: actually no it doesn't
+ ;;:jvm-opts  ["-Dsun.net.www.protocol.jar.useCaches=false"]
+
  :builds {:app {:target     :browser
                 :output-dir "public/js"
                 :asset-path "/js"
