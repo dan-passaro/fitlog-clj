@@ -3,21 +3,10 @@
    [reagent.core :as r]
    [reagent.dom.client :as rdc]
    [fitlog.data :as d]
+   [fitlog.ui.lib :refer [h2]]
+   [fitlog.ui.workout :refer [workout]]
+   [fitlog.nav :refer [app-view navigate-to]]
    [fitlog.util :refer [get!]]))
-
-(defonce app-view (r/atom {:view :home}))
-
-(defn workout [workout-id]
-  (let [self (get @d/workouts workout-id)]
-    [:<>
-     [:p "The workout screen wee"]
-     [:p (str "This is workout " workout-id ": " self)]
-     [:button {:class    "btn btn-primary"
-               :on-click #(reset! app-view {:view :home})}
-      "Go home"]]))
-
-(defn h2 [text]
-  [:h2 {:class "text-2xl"} text])
 
 (defn workouts []
   [:<>
@@ -26,17 +15,17 @@
     (fn [idx workout]
       ^{:key idx}
       [:p [:a {:class "link link-primary"
-               :on-click #(reset! app-view {:view :workout
-                                            :workout-id idx})}
+               :on-click #(navigate-to :workout :workout-id idx)}
            (str "Workout " idx ": " workout)]])
-    @d/workouts)
-   (when (empty? @d/workouts)
+    (get @d/data :workouts))
+   (when (empty? (get @d/data :workouts))
      [:p "No workouts. Create one to get started!"])
    [:p {:class "flex justify-center"}
     [:button {:class    "btn btn-primary w-64"
               :on-click (fn []
-                          (swap! d/workouts conj {:ts (js/Date.now)})
-                          (reset! app-view {:view :workout :workout-id (dec (count @d/workouts))}))}
+                          (js/console.log "data is:" (clj->js @d/data))
+                          (swap! d/data update :workouts conj (d/make-workout))
+                          (navigate-to :workout :workout-id (dec (count (get @d/data :workouts)))))}
      "New Workout"]]])
 
 (defn show []
@@ -55,13 +44,13 @@
                            (js/JSON.stringify (clj->js new-state))))
 
 (defn load-user-data
-  "Update d/workouts from the browser's local storage."
+  "Update d/data from the browser's local storage."
   []
   (when-let [data-json (js/localStorage.getItem "fitlog-data")]
     (let [data (js->clj (js/JSON.parse data-json) :keywordize-keys true)]
-      (reset! d/workouts data))))
+      (reset! d/data data))))
 
 (defn ^:dev/after-load init []
   (load-user-data)
-  (add-watch d/workouts nil persist-data)
+  (add-watch d/data nil persist-data)
   (rdc/render root [show]))

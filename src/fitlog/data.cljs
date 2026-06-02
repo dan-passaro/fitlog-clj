@@ -2,4 +2,8 @@
   (:require
    [reagent.core :as r]))
 
-(def workouts (r/atom []))
+(def data (r/atom {:workouts [] :exercises []}))
+
+(defn make-workout []
+  {:createdAt (.toISOString (new js/Date))
+   :id (.randomUUID js/crypto)})
