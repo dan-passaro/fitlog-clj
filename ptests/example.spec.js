@@ -18,7 +18,7 @@ test('persists data in local storage', async ({ page}) => {
 
   // Create a workout
   await page.getByRole('button', { name: 'New Workout' }).click()
-  await page.getByRole('button', { name: 'Go Home'}).click()
+  await page.getByRole('button', { name: 'Back'}).click()
 
   // See workout exists
   await expect(page.getByText('Workout 0')).toBeVisible()

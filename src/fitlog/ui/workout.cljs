@@ -14,4 +14,4 @@
      [:p "No exercises. Add an exercise to get started!"]
      [:button {:class    "btn btn-primary"
                :on-click #(navigate-to :home)}
-      "Go home"]]))
+      "Back"]]))
