@@ -19,8 +19,8 @@ watch-css:
     {{tailwind_cmd}}
 
 test:
-    npx shadow-cljs -A:dev compile test
-    @echo "Visit http://localhost:9001 to view results"
+    pnpm shadow-cljs -A:dev compile test
+    pnpm karma start --single-run
 
 test-e2e:
     @# TODO: make this more robust (e.g. do an isolated build that's independent
