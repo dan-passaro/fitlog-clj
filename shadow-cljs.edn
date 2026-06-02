@@ -10,8 +10,8 @@
                 :output-dir "public/js"
                 :asset-path "/js"
                 :modules    {:main {:init-fn fitlog.main/init}}}
-          :test {:target :browser-test
-                 :test-dir "out/test"
+          :test {:target :karma
+                 :output-to "out/karma-tests.js"
                  :ns-regexp "-test$"}
           :e2e-test {:target :node-test
                      :output-to "out/node-tests.js"

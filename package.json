@@ -3,6 +3,11 @@
 		"@playwright/test": "^1.60.0",
 		"@tailwindcss/cli": "^4.3.0",
 		"daisyui": "^5.5.19",
+		"jasmine-core": "^6.2.0",
+		"karma": "^6.4.4",
+		"karma-chrome-launcher": "^3.2.0",
+		"karma-cljs-test": "^0.1.0",
+		"karma-jasmine": "^5.1.0",
 		"shadow-cljs": "^3.4.9",
 		"source-map-support": "^0.5.21",
 		"tailwindcss": "^4.3.0"
