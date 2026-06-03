@@ -23,3 +23,9 @@
     (.click rtl/fireEvent (.getByText c "Add Exercise"))
     (r/flush)
     (is (= [routes/add-exercise {:id "0"}] (get-nav)))))
+
+(deftest header-is-workout-day
+  (set-workouts! (d/make-workout))
+  (let [c (render [workout :id "0"])]
+    (= "Today"
+       (.-textContent (.getByRole c "heading")))))

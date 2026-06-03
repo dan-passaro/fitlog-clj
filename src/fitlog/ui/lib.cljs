@@ -18,7 +18,7 @@
   (let [date (new js/Date js-date)]
     (cond
       (today? date) "Today"
-      (> date (a-week-ago)) (.toLocaleString date js/undefined {:weekday "long"})
-      :else (.toLocaleString date js/undefined {:month "short"
-                                                :weelday "long"
-                                                :day "numeric"}))))
+      (> date (a-week-ago)) (.toLocaleString date false #js {:weekday "long"})
+      :else (.toLocaleString date false #js {:month "short"
+                                             :weekday "long"
+                                             :day "numeric"}))))
