@@ -4,9 +4,26 @@
 
 (def data (r/atom {:workouts [] :exercises []}))
 
-(defn make-workout []
+(defn make-workout [& {:keys [sets]
+                       :or {sets []}}]
   {:createdAt (.toISOString (new js/Date))
-   :id (.randomUUID js/crypto)})
+   :id (.randomUUID js/crypto)
+   :sets sets})
+
+(defn make-exercise [name variables]
+  {:name name
+   :variables variables})
+
+(defn make-var
+  "Make an exercise variable.
+
+  This is a helper for make-exercise."
+  [name unit]
+  {:name name :unit unit})
+
+(defn make-set [exercise]
+  {:exercise exercise
+   :variables (map (fn [var] [var nil]) (:variables exercise))})
 
 (defn persist-data
   "Save data to local storage."

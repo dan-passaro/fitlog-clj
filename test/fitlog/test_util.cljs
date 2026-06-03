@@ -20,4 +20,7 @@
       [name params])))
 
 (defn set-workouts! [& workouts]
-  (swap! d/data assoc :workouts workouts))
+  (swap! d/data assoc :workouts (vec workouts)))
+
+(defn set-exercises! [& exercises]
+  (swap! d/data assoc :exercises (vec exercises)))

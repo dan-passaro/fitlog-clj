@@ -16,7 +16,13 @@
   (let [self (get-in @d/data [:workouts (int id)])]
     [:<>
      [h2 (human-date-str (:createdAt self))]
-     [:p "No exercises. Add an exercise to get started!"]
+     (if (seq (:sets self))
+       [:ul
+        (map-indexed
+         (fn [i workout-set]
+           ^{:key i} [:li (-> workout-set :exercise :name)])
+         (:sets self))]
+       [:p "No exercises. Add an exercise to get started!"])
      [primary-btn
       :href (rfe/href routes/add-exercise {:id id})
       :text "Add Exercise"]

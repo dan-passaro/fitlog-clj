@@ -14,7 +14,7 @@
 (defonce root
   (rdc/create-root (.getElementById js/document "app")))
 
-(defn ^:dev/after-load init []
+(defn init []
   (d/load-user-data)
   (add-watch d/data ::persist d/persist-data)
   (router/setup-router)
