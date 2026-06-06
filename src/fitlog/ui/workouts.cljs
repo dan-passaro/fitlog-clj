@@ -5,9 +5,24 @@
    [fitlog.routes :as routes]
    [fitlog.ui.lib :refer [h2 human-date-str]]))
 
+(defn- no-workout-for-today? []
+  (let [today (.toDateString (js/Date.))]
+    (not (some #(= (-> % :createdAt js/Date. .toDateString) today)
+               (:workouts @d/data)))))
+
+(defn- start-new-workout! []
+  (swap! d/data update :workouts conj (d/make-workout))
+  (let [idx (dec (count (:workouts @d/data)))]
+    (rfe/navigate routes/workout {:path-params {:id idx}})))
+
 (defn workouts []
   [:<>
    [h2 "Workouts"]
+   (when (no-workout-for-today?)
+     [:p {:class "flex justify-center"}
+      [:button {:class    "btn btn-primary w-64"
+                :on-click start-new-workout!}
+       "New Workout"]])
    (if (seq (:workouts @d/data))
      [:ul
       (map-indexed
@@ -18,11 +33,4 @@
                (-> workout :createdAt human-date-str)]])
        (sort #(compare (:createdAt %2) (:createdAt %1))
              (:workouts @d/data)))]
-     [:p "No workouts. Create one to get started!"])
-   [:p {:class "flex justify-center"}
-    [:button {:class    "btn btn-primary w-64"
-              :on-click (fn []
-                          (swap! d/data update :workouts conj (d/make-workout))
-                          (let [idx (dec (count (get @d/data :workouts)))]
-                            (rfe/navigate routes/workout {:path-params {:id idx}})))}
-     "New Workout"]]])
+     [:p "No workouts. Create one to get started!"])])

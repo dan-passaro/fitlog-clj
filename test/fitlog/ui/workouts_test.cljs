@@ -34,3 +34,16 @@
           workout-items (.getAllByRole c "listitem")]
       (is (= ["Wednesday" "Tuesday" "Monday"]
              (map #(.-textContent %) workout-items))))))
+
+(deftest doesnt-show-new-workout-button-if-theres-already-a-workout-for-today
+  (set-workouts! (d/make-workout))
+  (let [c (render [workouts])
+        workout-button (.queryByRole c "button" #js {:name "New Workout"})]
+    (is (nil? workout-button)))
+
+  (set-workouts!
+   (with-mock-date "2020-05-05" (d/make-workout)))
+  (with-mock-date "2020-05-06"
+    (let [c (render [workouts])
+          workout-button (.queryByRole c "button" #js {:name "New Workout"})]
+      (is (not (nil? workout-button))))))
