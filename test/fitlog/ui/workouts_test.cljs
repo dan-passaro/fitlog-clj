@@ -11,16 +11,26 @@
 (use-fitlog-fixtures)
 
 (deftest lists-workouts-by-date
-  (with-mock-date "2020-05-10T12:00:00Z"
+  (with-mock-date "2020-05-10"
     (set-workouts! (d/make-workout))
     (let [c (render [workouts])
           workout-items (.getAllByRole c "listitem")]
       (is (= ["Today"]
              (map #(.-textContent %) workout-items)))))
 
-  (with-mock-date "2020-05-11T12:00:00Z"
+  (with-mock-date "2020-05-11"
     (let [c (render [workouts])
           workout-items (.getAllByRole c "listitem")]
-      (is (= (count (:workouts @d/data)) 1))
       (is (= ["Sunday"]
+             (map #(.-textContent %) workout-items))))))
+
+(deftest orders-workouts-by-newest-first
+  (set-workouts!
+   (with-mock-date "2020-05-12" (d/make-workout))
+   (with-mock-date "2020-05-13" (d/make-workout))
+   (with-mock-date "2020-05-11" (d/make-workout)))
+  (with-mock-date "2020-05-14"
+    (let [c (render [workouts])
+          workout-items (.getAllByRole c "listitem")]
+      (is (= ["Wednesday" "Tuesday" "Monday"]
              (map #(.-textContent %) workout-items))))))

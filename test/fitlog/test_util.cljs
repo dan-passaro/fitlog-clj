@@ -29,3 +29,8 @@
 
 ;; Alias for macros
 (def mock-date MockDate)
+
+(defn default-to-noon [date]
+  (if (not (re-find #"T[\d:]+(Z)?$" date))
+    (str date "T12:00:00Z")
+    date))

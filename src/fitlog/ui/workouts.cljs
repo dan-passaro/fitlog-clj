@@ -16,7 +16,8 @@
          [:li [:a {:class "link link-primary"
                    :href (rfe/href routes/workout {:id idx})}
                (-> workout :createdAt human-date-str)]])
-       (:workouts @d/data))]
+       (sort #(compare (:createdAt %2) (:createdAt %1))
+             (:workouts @d/data)))]
      [:p "No workouts. Create one to get started!"])
    [:p {:class "flex justify-center"}
     [:button {:class    "btn btn-primary w-64"

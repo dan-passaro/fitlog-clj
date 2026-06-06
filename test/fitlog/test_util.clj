@@ -18,7 +18,7 @@
 
 (defmacro with-mock-date [date-val & body]
   `(do
-     (.set fitlog.test-util/mock-date ~date-val)
+     (.set fitlog.test-util/mock-date (fitlog.test-util/default-to-noon ~date-val))
      (try
        ~@body
        (finally
