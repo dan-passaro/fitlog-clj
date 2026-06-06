@@ -10,6 +10,10 @@ To get an interactive development environment run:
 
 Then visit http://localhost:8081/ to use the app.
 
+You should also run
+
+    just watch-css
+
 ### Tests
 
 To run unit tests, use
