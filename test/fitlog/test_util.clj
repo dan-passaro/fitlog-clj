@@ -15,3 +15,11 @@
        ~@body
        (catch :default e#
          (cljs.test/is false (str "async test threw: " e#))))))
+
+(defmacro with-mock-date [date-val & body]
+  `(do
+     (.set fitlog.test-util/mock-date ~date-val)
+     (try
+       ~@body
+       (finally
+         (.reset fitlog.test-util/mock-date)))))

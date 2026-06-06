@@ -2,15 +2,17 @@
   (:require-macros [fitlog.test-util])
   (:require
    [reagent.core :as r]
+   ["mockdate" :as MockDate]
    ["@testing-library/react" :as rtl]
    [fitlog.data :as d]
    [fitlog.nav :as nav]
    [fitlog.router]))
 
-;; Proxy because rtl/cleanup can't be imported directly by a .clj
+;; Alias for macros
 (def cleanup rtl/cleanup)
 
 (defn render [elem]
+  (rtl/cleanup)  ;; allow a single test to use (render) twice
   (rtl/render (r/as-element elem)))
 
 (defn get-nav []
@@ -24,3 +26,6 @@
 
 (defn set-exercises! [& exercises]
   (swap! d/data assoc :exercises (vec exercises)))
+
+;; Alias for macros
+(def mock-date MockDate)
