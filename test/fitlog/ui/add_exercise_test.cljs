@@ -3,6 +3,7 @@
      [cljs.test :refer [deftest is testing]]
      [reagent.core :as r]
      [reitit.frontend.easy :as rfe]
+     ["@testing-library/dom" :refer [waitFor]]
      ["@testing-library/react" :as rtl]
      ["@testing-library/user-event" :as user-event-mod]
      [fitlog.routes :as routes]
@@ -15,6 +16,10 @@
 
 (use-fitlog-fixtures
  :each [{:before #(reset! ae/adding-exercise? false)}])
+
+(defn- shown-exercise-names [c]
+  (let [exercise-names (.getAllByTestId c "exercise-name")]
+    (map #(.-textContent %) exercise-names)))
 
 (deftest shows-header
   (set-workouts! (d/make-workout))
@@ -52,10 +57,9 @@
   (set-workouts! (d/make-workout))
   (set-exercises! (d/make-exercise "Treadmill" [{:name "Speed" :unit "mph"}])
                   (d/make-exercise "Bench press" [{:name "Weight" :unit "lbs"}]))
-  (let [c (render [add-exercise :id "0"])
-        exercise-names (.getAllByTestId c "exercise-name")]
+  (let [c (render [add-exercise :id "0"])]
     (is (= ["Bench press" "Treadmill"]
-           (->> exercise-names (map #(.-textContent %)) sort)))))
+           (-> c shown-exercise-names sort)))))
 
 (deftest-async can-add-existing-exercise-to-workout
   (set-workouts! (d/make-workout))
@@ -78,3 +82,29 @@
   (let [c (render [add-exercise :id "0"])]
     (.click rtl/fireEvent (.getByText c "Back"))
     (is (= [routes/workout {:id "0"}] (get-nav)))))
+
+(deftest-async allows-searching-exercises
+  (set-workouts! (d/make-workout))
+  (set-exercises! (d/make-exercise "Treadmill" [])
+                  (d/make-exercise "Bench press" [])
+                  (d/make-exercise "Chest press" []))
+  (let [c (render [add-exercise :id "0"])
+        search (.getByRole c "searchbox")
+        user (.setup user-event)]
+    (await (.type user search "press"))
+    (is (= ["Bench press" "Chest press"]
+           (-> c  shown-exercise-names sort)))
+    (await (.clear user search))
+    (await (.type user search "tread"))
+    (await (waitFor #(is (= ["Treadmill"]
+                            (-> c shown-exercise-names sort)))))))
+
+(deftest-async search-still-shows-when-everything-filtered
+  (set-workouts! (d/make-workout))
+  (set-exercises! (d/make-exercise "Treadmill" []))
+  (let [c (render [add-exercise :id "0"])
+        search (.getByRole c "searchbox")
+        user (.setup user-event)]
+    (await (.type user search "randomstuff"))
+    (is (await (.findByText c "No exercises match your search.")))
+    (is (await (.findByRole c "searchbox")))))

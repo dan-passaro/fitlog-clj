@@ -1,7 +1,10 @@
 (ns fitlog.ui.add-exercise
   (:require
    [reagent.core :as r]
+   [reagent.hooks :as rh]
    [reitit.frontend.easy :as rfe]
+   ["fuse.js" :as Fuse]
+   ["@heroicons/react/24/outline" :refer [MagnifyingGlassIcon]]
    [fitlog.data :as d]
    [fitlog.routes :as routes]
    [fitlog.ui.lib :refer [h2]]))
@@ -18,34 +21,62 @@
 
 (defonce exercise-name (r/atom ""))
 
+(defonce filtered-exercises (r/atom []))
+
+(defonce fuse (r/atom nil))
+
+(defn- on-add-exercise [workout-id exercise]
+  (swap! d/data update-in [:workouts (int workout-id) :sets] (fnil identity []))
+  (swap! d/data update-in [:workouts (int workout-id) :sets] conj (d/make-set exercise))
+  (rfe/navigate routes/workout {:path-params {:id workout-id}}))
+
+(defn- js->clj-kw [v]
+  (js->clj v :keywordize-keys true))
+
+(defn- filter-exercises!
+  ([]
+   (filter-exercises! ""))
+  ([query]
+   (reset! filtered-exercises (->> query (.search @fuse) js->clj-kw (mapv :item)))))
+
 (defn- add-existing-exercise [id]
-  [:<>
-   [h2 "Choose an exercise"]
-   (let [exercises (:exercises @d/data)]
-     (if (seq exercises)
-       [:ul {:class "list"}
-        (map-indexed
-         (fn [i exercise]
-           ^{:key i} [:li {:class "list-row"}
-                      [:span {:class "list-col-grow"
-                              :data-testid "exercise-name"}
-                       (:name exercise)]
-                      [:button {:class "btn btn-primary"
-                                :aria-label (str "Add " (:name exercise))
-                                :on-click (fn []
-                                            (swap! d/data update-in [:workouts (int id) :sets] (fnil identity []))
-                                            (swap! d/data update-in [:workouts (int id) :sets] conj (d/make-set exercise))
-                                            (rfe/navigate routes/workout {:path-params {:id id}}))}
-                       "+"]])
-         exercises)]
-       [:p "There are no exercises available. Create an exercise, then you can
+  (reset! fuse (Fuse. (clj->js (:exercises @d/data))
+                      #js {:keys #js ["name"]
+                           :threshold 0.4}))
+  (filter-exercises!)
+  (fn [id]
+    [:<>
+     [h2 "Choose an exercise"]
+     (let [exercises (:exercises @d/data)]
+       (if (seq exercises)
+         [:<>
+          [:p
+           [:label {:class "input"}
+            [:> MagnifyingGlassIcon {:class "h-[1em]"}]
+            [:input {:type "search" :class "grow" :placeholder "Search"
+                     :on-change #(filter-exercises! (-> % .-target .-value))}]]]
+          (if (seq @filtered-exercises)
+            [:ul {:class "list"}
+             (map-indexed
+              (fn [i exercise]
+                ^{:key i} [:li {:class "list-row"}
+                           [:span {:class "list-col-grow"
+                                   :data-testid "exercise-name"}
+                            (:name exercise)]
+                           [:button {:class "btn btn-primary"
+                                     :aria-label (str "Add " (:name exercise))
+                                     :on-click #(on-add-exercise id exercise)}
+                            "+"]])
+              @filtered-exercises)]
+            [:p "No exercises match your search."])]
+         [:p "There are no exercises available. Create an exercise, then you can
        add it to your workout."]))
-   [:button {:class "btn btn-primary"
-             :on-click #(reset! adding-exercise? true)}
-    "Create new exercise"]
-   [:a {:href (rfe/href routes/workout {:id id})
-        :class "btn btn-neutral"}
-    "Back"]])
+     [:button {:class "btn btn-primary"
+               :on-click #(reset! adding-exercise? true)}
+      "Create new exercise"]
+     [:a {:href (rfe/href routes/workout {:id id})
+          :class "btn btn-neutral"}
+      "Back"]]))
 
 (defn- bind-textinput-to [atom-var]
   {:value (deref atom-var)
