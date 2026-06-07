@@ -8,11 +8,7 @@
                        :or {sets []}}]
   {:createdAt (.toISOString (new js/Date))
    :id (.randomUUID js/crypto)
-   :sets sets})
-
-(defn make-exercise [name variables]
-  {:name name
-   :variables variables})
+   :sets (vec sets)})
 
 (defn make-var
   "Make an exercise variable.
@@ -21,9 +17,29 @@
   [name unit]
   {:name name :unit unit})
 
-(defn make-set [exercise]
-  {:exercise exercise
-   :variables (map (fn [var] [var nil]) (:variables exercise))})
+(defn make-exercise
+  "Create an exercise.
+  variables - a seq of variables as created by make-var"
+  [name variables]
+  {:name name :variables (vec variables)})
+
+(defn make-exercisev
+  "Make an exercise with variables.
+
+  This is a convenience function for tests."
+  [name & vars]
+  (make-exercise name (mapv (partial apply make-var)
+                            (partition 2 vars))))
+
+(defn make-set
+  ([exercise]
+   (make-set exercise {}))
+  ([exercise var-values]
+   {:exercise exercise
+    :variables (mapv (fn [var]
+                       (let [var-val (get var-values (:name var))]
+                         [var var-val]))
+                     (:variables exercise))}))
 
 (defn persist-data
   "Save data to local storage."

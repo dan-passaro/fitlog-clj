@@ -4,6 +4,7 @@
    [reagent.core :as r]
    ["mockdate" :as MockDate]
    ["@testing-library/react" :as rtl]
+   ["@testing-library/user-event" :as user-event-mod]
    [fitlog.data :as d]
    [fitlog.nav :as nav]
    [fitlog.router]))
@@ -34,3 +35,8 @@
   (if (not (re-find #"T[\d:]+(Z)?$" date))
     (str date "T12:00:00Z")
     date))
+
+(def user-event user-event-mod/default)
+
+(defn setup-user-events []
+  (.setup user-event))
