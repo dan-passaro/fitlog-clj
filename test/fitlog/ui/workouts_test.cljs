@@ -2,10 +2,13 @@
   (:require
    [cljs.test :refer-macros [deftest is]]
    [reagent.core :as r]
+   [reitit.frontend.easy :as rfe]
+   ["@testing-library/dom" :refer [within]]
    ["@testing-library/react" :as rtl]
    [fitlog.routes :as routes]
    [fitlog.data :as d]
    [fitlog.test-util :refer [deftest-async get-nav render set-exercises! set-workouts! use-fitlog-fixtures with-mock-date]]
+   [fitlog.ui.lib :refer [human-date-str]]
    [fitlog.ui.workouts :refer [workouts]]))
 
 (use-fitlog-fixtures)
@@ -47,3 +50,21 @@
     (let [c (render [workouts])
           workout-button (.queryByRole c "button" #js {:name "New Workout"})]
       (is (not (nil? workout-button))))))
+
+;; Test for bug #29
+(deftest workout-links-are-correct
+  (let [workout-records [(with-mock-date "2020-05-03" (d/make-workout))
+                         (with-mock-date "2020-05-10" (d/make-workout))
+                         (with-mock-date "2020-05-20" (d/make-workout))
+                         (with-mock-date "2020-05-17" (d/make-workout))]
+        workout-record-dates (mapv #(human-date-str (:createdAt %))
+                                   workout-records)]
+    (apply set-workouts! workout-records)
+    (let [c (render [workouts])
+          workout-links (map #(.getByRole (within %) "link")
+                             (.queryAllByRole c "listitem"))]
+      (doseq [workout-link workout-links]
+        (let [workout-idx (.indexOf workout-record-dates
+                                    (.-textContent workout-link))]
+          (is (= (rfe/href routes/workout {:id workout-idx})
+                 (.getAttribute workout-link "href"))))))))

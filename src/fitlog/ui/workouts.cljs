@@ -25,12 +25,13 @@
        "New Workout"]])
    (if (seq (:workouts @d/data))
      [:ul
-      (map-indexed
-       (fn [idx workout]
+      (map
+       (fn [[idx workout]]
          ^{:key idx}
          [:li [:a {:class "link link-primary"
                    :href (rfe/href routes/workout {:id idx})}
                (-> workout :createdAt human-date-str)]])
-       (sort #(compare (:createdAt %2) (:createdAt %1))
-             (:workouts @d/data)))]
+       (sort-by #(-> % second :createdAt)
+                >
+                (map-indexed vector (:workouts @d/data))))]
      [:p "No workouts. Create one to get started!"])])
