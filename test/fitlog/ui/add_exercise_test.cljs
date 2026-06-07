@@ -93,11 +93,13 @@
         user (.setup user-event)]
     (await (.type user search "press"))
     (is (= ["Bench press" "Chest press"]
-           (-> c  shown-exercise-names sort)))
-    (await (.clear user search))
+           (-> c  shown-exercise-names sort))))
+  (let [c (render [add-exercise :id "0"])
+        search (.getByRole c "searchbox")
+        user (.setup user-event)]
     (await (.type user search "tread"))
-    (await (waitFor #(is (= ["Treadmill"]
-                            (-> c shown-exercise-names sort)))))))
+    (is (= ["Treadmill"]
+           (-> c shown-exercise-names sort)))))
 
 (deftest-async search-still-shows-when-everything-filtered
   (set-workouts! (d/make-workout))
