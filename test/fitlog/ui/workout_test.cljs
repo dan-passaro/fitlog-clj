@@ -36,7 +36,7 @@
     (set-workouts! (d/make-workout :sets [(d/make-set treadmill)
                                           (d/make-set bench-press)]))
     (let [c (render [workout :id "0"])
-          set-items (await (.getAllByRole c "listitem"))
+          set-items (await (.getAllByRole c "region"))
           set-headings (map #(.getByRole (within %) "heading")
                             set-items)]
       (is (= ["Bench press" "Treadmill"]
@@ -113,11 +113,12 @@
                            (d/make-set bench-press)
                            (d/make-set bench-press)]))
     (let [c (render [workout :id "0"])
-          workout-items (.getAllByRole c "listitem")]
-      (is (= 3 (count workout-items)))
-      (is (= 2 (count (.queryAllByRole (within (nth workout-items 0))
-                                       "textbox"))))
-      (is (= 1 (count (.queryAllByRole (within (nth workout-items 1))
-                                       "textbox"))))
-      (is (= 3 (count (.queryAllByRole (within (nth workout-items 2))
-                                       "textbox")))))))
+          workout-cards (.getAllByRole c "region")]
+      (is (= 3 (count workout-cards)))
+      (is (= 2 (count (.queryAllByRole (within (nth workout-cards 0))
+                                       "listitem"))))
+      (is (= 1 (count (.queryAllByRole (within (nth workout-cards 1))
+                                       "listitem"))))
+      (is (= 3 (count (.queryAllByRole (within (nth workout-cards 2))
+                                       "listitem")))))))
+
