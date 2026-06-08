@@ -1,12 +1,12 @@
 (ns fitlog.ui.workout-test
   (:require
-   [cljs.test :refer-macros [deftest is]]
+   [cljs.test :refer-macros [deftest is testing]]
    [reagent.core :as r]
    ["@testing-library/dom" :refer [within]]
    ["@testing-library/react" :as rtl]
    [fitlog.routes :as routes]
    [fitlog.data :as d]
-   [fitlog.test-util :refer [deftest-async get-nav render set-exercises! set-workouts! setup-user-events use-fitlog-fixtures]]
+   [fitlog.test-util :refer [deftest-async get-nav render set-exercises! set-workouts! setup-user-events use-fitlog-fixtures with-mock-date]]
    [fitlog.ui.workout :refer [workout]]))
 
 (use-fitlog-fixtures)
@@ -65,10 +65,39 @@
                         {:exercise bench-press :variables [[bench-press-weight "100"]]}]
                        (get-in @d/data [:workouts 0 :sets]))))))
 
-(deftest-async set-variables-saved-data-if-available
+(deftest-async set-variables-show-saved-data-if-available
   (let [treadmill (d/make-exercise "Treadmill" [(d/make-var "Speed" "mph")])]
     (set-workouts! (d/make-workout
-                    :sets [(d/make-set treadmill {"Speed" "5.2"})]))
+                    :sets [(d/make-set treadmill :vars {"Speed" "5.2"})]))
     (let [c (render [workout :id "0"])]
       (is (= "5.2"
              (.-value (await (.findByRole c "textbox" #js {:name "Speed"}))))))))
+
+(deftest-async sets-can-be-marked-as-completed
+  (let [treadmill (d/make-exercisev "Treadmill" "Speed" "mph")
+        now (.toISOString (js/Date.))]
+    (set-workouts! (d/make-workout :sets [(d/make-set treadmill)]))
+    (let [c (render [workout :id "0"])
+          user (setup-user-events)]
+      (is (nil? (get-in @d/data [:workouts 0 :sets 0 :completedAt])))
+      (with-mock-date now
+        (await (.click user (await (.findByRole c "checkbox" #js {:name "Done"})))))
+      (is (= now
+             (get-in @d/data [:workouts 0 :sets 0 :completedAt]))))))
+
+(deftest-async sets-show-if-they-have-been-completed
+  (let [treadmill (d/make-exercisev "Treadmill" "Speed" "mph")]
+
+    (testing "checked when complete"
+      (set-workouts! (d/make-workout
+                      :sets [(d/make-set treadmill
+                                         :completed-at (.toISOString (js/Date.)))]))
+      (let [c (render [workout :id "0"])
+            done-checkbox (await (.findByRole c "checkbox" #js {:name "Done"}))]
+        (is (.-checked done-checkbox))))
+
+    (testing "blank when incomplete"
+      (set-workouts! (d/make-workout :sets [(d/make-set treadmill)]))
+      (let [c (render [workout :id "0"])
+            done-checkbox (await (.findByRole c "checkbox" #js {:name "Done"}))]
+        (is (not (.-checked done-checkbox)))))))

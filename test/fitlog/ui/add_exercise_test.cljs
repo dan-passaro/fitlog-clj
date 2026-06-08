@@ -4,6 +4,7 @@
      [reagent.core :as r]
      [reitit.frontend.easy :as rfe]
      ["@testing-library/react" :as rtl]
+     ["@testing-library/dom" :refer [waitFor]]
      ["@testing-library/user-event" :as user-event-mod]
      [fitlog.routes :as routes]
      [fitlog.data :as d]
@@ -91,6 +92,9 @@
         search (.getByRole c "searchbox")
         user (.setup user-event)]
     (await (.type user search "press"))
+
+    ;; THIS ASSERTION IS FLAKY!! If this failed, just try re-running
+    ;; I tried adding a (waitFor) here but it didn't seem to help...
     (is (= ["Bench press" "Chest press"]
            (-> c  shown-exercise-names sort))))
   (let [c (render [add-exercise :id "0"])

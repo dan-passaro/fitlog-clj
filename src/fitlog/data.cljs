@@ -31,15 +31,18 @@
   (make-exercise name (mapv (partial apply make-var)
                             (partition 2 vars))))
 
-(defn make-set
-  ([exercise]
-   (make-set exercise {}))
-  ([exercise var-values]
+(defn make-set [exercise & {:keys [completed-at vars]
+                            :or {completed-at nil
+                                 vars {}}}]
+  (merge
    {:exercise exercise
     :variables (mapv (fn [var]
-                       (let [var-val (get var-values (:name var))]
+                       (let [var-val (get vars (:name var))]
                          [var var-val]))
-                     (:variables exercise))}))
+                     (:variables exercise))}
+   (if completed-at
+     {:completedAt completed-at}
+     {})))
 
 (defn persist-data
   "Save data to local storage."
