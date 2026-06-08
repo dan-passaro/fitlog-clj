@@ -122,3 +122,20 @@
       (is (= 3 (count (.queryAllByRole (within (nth workout-cards 2))
                                        "listitem")))))))
 
+(deftest-async exercise-card-has-button-to-add-another-set
+  (let [bench-press (d/make-exercisev "Bench press")
+        treadmill (d/make-exercisev "Treadmill")]
+    (set-workouts! (d/make-workout :sets [(d/make-set bench-press)
+                                          (d/make-set treadmill)]))
+    (let [c (render [workout :id "0"])
+          workout-cards (.getAllByRole c "region")
+          user (setup-user-events)]
+      (is (= 2 (count workout-cards)))
+      (is (= 1 (count (.getAllByRole (within (nth workout-cards 0)) "listitem"))))
+      (await (.click user (.getByRole (within (nth workout-cards 0))
+                                      "button" #js {:name "Add Bench press set"})))
+      (is (= 2 (count (.getAllByRole (within (nth workout-cards 0)) "listitem"))))
+      (is (= 1 (count (.getAllByRole (within (nth workout-cards 1)) "listitem"))))
+      (await (.click user (.getByRole (within (nth workout-cards 1))
+                                      "button" #js {:name "Add Treadmill set"})))
+      (is (= 2 (count (.getAllByRole (within (nth workout-cards 1)) "listitem")))))))

@@ -1,6 +1,7 @@
 (ns fitlog.ui.workout
   (:require
    [reitit.frontend.easy :as rfe]
+   ["@heroicons/react/24/outline" :refer [PlusIcon]]
    [fitlog.data :as d]
    [fitlog.routes :as routes]
    [fitlog.ui.lib :refer [h2 human-date-str]]))
@@ -14,6 +15,13 @@
 
 (defn- update-set-var! [workout-idx set-idx var-idx new-val]
   (swap! d/data assoc-in [:workouts workout-idx :sets set-idx :variables var-idx 1] new-val))
+
+(defn- add-set! [workout-idx preceding-set-idx]
+  (swap! d/data update-in [:workouts workout-idx :sets]
+         (fn [sets]
+           (vec (concat (subvec sets 0 (inc preceding-set-idx))
+                        [(d/make-set (get-in sets [preceding-set-idx :exercise]))]
+                        (subvec sets (inc preceding-set-idx)))))))
 
 (defn workout [& {:keys [id]}]
   (let [id (parse-long id)
@@ -32,9 +40,15 @@
                     :role "region"
                     :aria-labelledby card-name-id}
                [:section {:class "card-body"}
-                [:h3 {:class "card-title"
-                      :id card-name-id}
-                 (:name exercise)]
+                [:div {:class "flex justify-between items-center"}
+                 [:h3 {:class "card-title"
+                       :id card-name-id}
+                  (:name exercise)]
+                 [:button {:class "btn btn-sm btn-ghost"
+                           :type "button"
+                           :aria-label (str "Add " (:name exercise) " set")
+                           :on-click #(add-set! id (first (last workout-set-group)))}
+                  [:> PlusIcon {:class "h-[1em]"}]]]
                 [:ul
                  (doall
                   (map
