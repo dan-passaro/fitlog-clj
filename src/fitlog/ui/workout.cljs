@@ -24,52 +24,58 @@
        [:ul
         (doall
          (map-indexed
-          (fn [i workout-set]
-            ^{:key i}
-            [:li {:class "card shadow-sm"}
-             [:section {:class "card-body"}
-              [:h3 {:class "card-title"}
-               (-> workout-set :exercise :name)]
-              [:form {:on-submit #(.preventDefault %)
-                      :class "flex gap-4 items-stretch"}
-               [:div {:class "flex flex-wrap gap-4 grow"}
+          (fn [group-idx workout-set-group]
+            (let [exercise (:exercise (second (first workout-set-group)))
+                  card-name-id (gensym)]
+              ^{:key (str id "-" group-idx)}
+              [:li {:class "card shadow-sm"
+                    :aria-labelledby card-name-id}
+               [:section {:class "card-body"}
+                [:h3 {:class "card-title"
+                      :id card-name-id}
+                 (:name exercise)]
                 (doall
-                 (map-indexed (fn [idx var]
-                                (let [input-id (gensym)]
-                                  ^{:key idx}
-                                  [:fieldset {:class "fieldset w-1/6"}
-                                   [:label {:class "fieldset-legend"
-                                            :for input-id}
-                                    (:name var)]
-                                   [:input {:id input-id
-                                            :class "input"
-                                            :type "text"
-                                            :inputMode "decimal"
+                 (map
+                  (fn [[set-idx workout-set]]
+                    ^{:key (str id "-" set-idx)}
+                    [:form {:on-submit #(.preventDefault %)
+                            :class "flex gap-4 items-stretch"}
 
-                                            ;; I just realized how many IDs I
-                                            ;; have, whoops.
-                                            :on-change #(update-set-var! id i idx (-> % .-target .-value))
-                                            :default-value (get-in @d/data [:workouts id :sets i :variables idx 1])
-                                            :placeholder (:unit var)}]]))
-                              (-> workout-set :exercise :variables)))]
-               (let [input-id (gensym)]
-                 [:fieldset {:class "fieldset w-1/6 ml-auto"}
-                  [:label {:class "fieldset-legend"
-                           :for input-id}
-                   "Done"]
+                     [:div {:class "flex flex-wrap gap-4 grow"}
+                      (doall
+                       (map-indexed (fn [var-idx var]
+                                      (let [input-id (gensym)]
+                                        ^{:key (str set-idx "-" var-idx)}
+                                        [:fieldset {:class "fieldset w-1/6"}
+                                         [:label {:class "fieldset-legend"
+                                                  :for input-id}
+                                          (:name var)]
+                                         [:input {:id input-id
+                                                  :class "input"
+                                                  :type "text"
+                                                  :inputMode "decimal"
+                                                  :on-change #(update-set-var! id set-idx var-idx (-> % .-target .-value))
+                                                  :default-value (get-in @d/data [:workouts id :sets set-idx :variables var-idx 1])
+                                                  :placeholder (:unit var)}]]))
+                                    (-> workout-set :exercise :variables)))]
+                     (let [input-id (gensym)]
+                       [:fieldset {:class "fieldset w-1/6 ml-auto"}
+                        [:label {:class "fieldset-legend"
+                                 :for input-id}
+                         "Done"]
 
-                  ;; TODO: classes here aren't all needed. I was trying to get
-                  ;; the checkbox to be center-aligned with the textbox but I
-                  ;; couldn't get it to work and gave up cause I don't care that
-                  ;; much. But someday this should be revisited and cleaned up.
-                  [:div {:class "flex grow items-center justify-center"}
-                   [:input {:class "checkbox"
-                           :type "checkbox"
-                           :id input-id
-                           :defaultChecked (boolean (get-in @d/data [:workouts id :sets i :completedAt]))
-                           :on-change #(swap! d/data assoc-in [:workouts id :sets i :completedAt] (.toISOString (js/Date.)))}]]])]]])
-
-          (:sets self)))]
+                        ;; TODO: classes here aren't all needed. I was trying to get
+                        ;; the checkbox to be center-aligned with the textbox but I
+                        ;; couldn't get it to work and gave up cause I don't care that
+                        ;; much. But someday this should be revisited and cleaned up.
+                        [:div {:class "flex grow items-center justify-center"}
+                         [:input {:class "checkbox"
+                                  :type "checkbox"
+                                  :id input-id
+                                  :defaultChecked (boolean (get-in @d/data [:workouts id :sets set-idx :completedAt]))
+                                  :on-change #(swap! d/data assoc-in [:workouts id :sets set-idx :completedAt] (.toISOString (js/Date.)))}]]])])
+                  workout-set-group))]]))
+          (partition-by (comp :name :exercise second) (map vector (range) (:sets self)))))]
        [:p "No exercises. Add an exercise to get started!"])
      [primary-btn
       :href (rfe/href routes/add-exercise {:id id})

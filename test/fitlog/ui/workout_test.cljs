@@ -101,3 +101,23 @@
       (let [c (render [workout :id "0"])
             done-checkbox (await (.findByRole c "checkbox" #js {:name "Done"}))]
         (is (not (.-checked done-checkbox)))))))
+
+(deftest groups-consecutive-sets-of-the-same-exercise-together
+  (let [treadmill (d/make-exercisev "Treadmill" "Speed" "mph")
+        bench-press (d/make-exercisev "Bench press" "Weight" "lbs")]
+    (set-workouts! (d/make-workout
+                    :sets [(d/make-set bench-press)
+                           (d/make-set bench-press)
+                           (d/make-set treadmill)
+                           (d/make-set bench-press)
+                           (d/make-set bench-press)
+                           (d/make-set bench-press)]))
+    (let [c (render [workout :id "0"])
+          workout-items (.getAllByRole c "listitem")]
+      (is (= 3 (count workout-items)))
+      (is (= 2 (count (.queryAllByRole (within (nth workout-items 0))
+                                       "textbox"))))
+      (is (= 1 (count (.queryAllByRole (within (nth workout-items 1))
+                                       "textbox"))))
+      (is (= 3 (count (.queryAllByRole (within (nth workout-items 2))
+                                       "textbox")))))))
