@@ -21,7 +21,7 @@
     [:<>
      [h2 (human-date-str (:createdAt self))]
      (if (seq (:sets self))
-       [:ul
+       [:ul {:class "flex flex-col gap-2"}
         (doall
          (map-indexed
           (fn [group-idx workout-set-group]
