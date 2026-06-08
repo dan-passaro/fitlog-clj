@@ -3,7 +3,6 @@
      [cljs.test :refer [deftest is testing]]
      [reagent.core :as r]
      [reitit.frontend.easy :as rfe]
-     ["@testing-library/dom" :refer [waitFor]]
      ["@testing-library/react" :as rtl]
      ["@testing-library/user-event" :as user-event-mod]
      [fitlog.routes :as routes]

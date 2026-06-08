@@ -27,10 +27,11 @@
           (fn [i workout-set]
             ^{:key i}
             [:li {:class "card shadow-sm"}
-             [:div {:class "card-body"}
+             [:section {:class "card-body"}
               [:h3 {:class "card-title"}
                (-> workout-set :exercise :name)]
-              [:div {:class "flex flex-wrap gap-4"}
+              [:form {:on-submit #(.preventDefault %)
+                      :class "flex flex-wrap gap-4"}
                (doall
                 (map-indexed (fn [idx var]
                                ^{:key idx}
@@ -39,11 +40,13 @@
                                  (:name var)]
                                 [:input {:class "input"
                                          :aria-label (:name var)
+                                         :type "text"
+                                         :inputMode "decimal"
 
                                          ;; I just realized how many IDs I have,
                                          ;; whoops.
                                          :on-change #(update-set-var! id i idx (-> % .-target .-value))
-                                         :value (get-in @d/data [:workouts id :sets i :variables idx 1])
+                                         :default-value (get-in @d/data [:workouts id :sets i :variables idx 1])
                                          :placeholder (:unit var)}]])
                              (-> workout-set :exercise :variables)))]]])
           (:sets self)))]

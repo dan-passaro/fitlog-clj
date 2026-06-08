@@ -62,17 +62,13 @@
       (await (enter :field "Speed" :value "5.2"))
       (await (enter :field "Weight" :value "100"))
       (is (= [{:exercise treadmill :variables [[treadmill-speed "5.2"]]}
-              {:exercise bench-press :variables [[bench-press-weight "100"]]}]
-             (get-in @d/data [:workouts 0 :sets]))))))
+                        {:exercise bench-press :variables [[bench-press-weight "100"]]}]
+                       (get-in @d/data [:workouts 0 :sets]))))))
 
-(deftest-async set-variables-display-data-reactively
+(deftest-async set-variables-saved-data-if-available
   (let [treadmill (d/make-exercise "Treadmill" [(d/make-var "Speed" "mph")])]
     (set-workouts! (d/make-workout
                     :sets [(d/make-set treadmill {"Speed" "5.2"})]))
     (let [c (render [workout :id "0"])]
       (is (= "5.2"
-             (.-value (await (.findByRole c "textbox" #js {:name "Speed"})))))
-      (swap! d/data assoc-in [:workouts 0 :sets 0 :variables 0 1] "6.1")
-      (r/flush)  ;; allow component to re-render
-      (is (= "6.1"
              (.-value (await (.findByRole c "textbox" #js {:name "Speed"}))))))))
