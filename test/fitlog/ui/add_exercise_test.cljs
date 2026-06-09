@@ -9,7 +9,7 @@
      [fitlog.routes :as routes]
      [fitlog.data :as d]
      [fitlog.nav :as nav]
-     [fitlog.test-util :refer [deftest-async get-nav render set-exercises! set-workouts! use-fitlog-fixtures wait-for]]
+     [fitlog.test-util :refer [deftest-async get-nav render set-exercises! set-workouts! setup-user-events use-fitlog-fixtures wait-for]]
      [fitlog.ui.add-exercise :as ae :refer [add-exercise]]))
 
 (def user-event user-event-mod/default)
@@ -20,6 +20,14 @@
 (defn- shown-exercise-names [c]
   (let [exercise-names (.getAllByTestId c "exercise-name")]
     (map #(.-textContent %) exercise-names)))
+
+(defn- make-click [user c]
+  (^:async fn [btn]
+   (.click user (await (.findByRole c "button" #js {:name btn})))))
+
+(defn- make-type [user c]
+  (^:async fn [field-name value]
+   (.type user (await (.findByRole c "textbox" #js {:name field-name})) value)))
 
 (deftest shows-header
   (set-workouts! (d/make-workout))
@@ -32,10 +40,8 @@
   (set-exercises!)
   (let [user (.setup user-event)
         c (render [add-exercise :id "0"])
-        click (^:async fn [btn]
-               (.click user (await (.findByRole c "button" #js {:name btn}))))
-        type (^:async fn [field-name value]
-              (.type user (await (.findByRole c "textbox" #js {:name field-name})) value))]
+        click (make-click user c)
+        type (make-type user c)]
     (is (= "Choose an exercise"
            (.-textContent (.getByRole c "heading"))))
     (await (click "Create new exercise"))
@@ -56,6 +62,49 @@
     (await (wait-for #(let [exercise (get-in @d/data [:exercises 0])]
                         (= {:name "Treadmill"
                             :variables [{:name "Speed" :unit "mph"}]}
+                           exercise))))))
+
+(deftest-async allows-editing-variables-when-creating-exercise
+  (set-exercises!)
+  (set-workouts! (d/make-workout))
+  (let [user (setup-user-events)
+        c (render [add-exercise :id "0"])
+        click (make-click user c)
+        type (make-type user c)]
+    (await (click "Create new exercise"))
+    (await (type "Name" "Treadmill"))
+    (await (click "Add exercise variable"))
+    (await (type "Variable name" "Speed"))
+    (await (type "Unit" "mph"))
+    (await (click "Save variable"))
+    (await (click "Edit Speed variable"))
+    (await (type "Variable name" "y"))
+    (await (click "Save variable"))
+    (await (click "Save exercise"))
+    (await (.findByRole c "heading" #js {:text "Choose an exercise"}))
+    (await (wait-for #(let [exercise (get-in @d/data [:exercises 0])]
+                        (= {:name "Treadmill"
+                            :variables [{:name "Speedy" :unit "mph"}]}
+                           exercise))))))
+
+(deftest-async allows-removing-variables-when-creating-exercise
+  (set-exercises!)
+  (set-workouts! (d/make-workout))
+  (let [user (setup-user-events)
+        c (render [add-exercise :id "0"])
+        click (make-click user c)
+        type (make-type user c)]
+    (await (click "Create new exercise"))
+    (await (type "Name" "Treadmill"))
+    (await (click "Add exercise variable"))
+    (await (type "Variable name" "Speed"))
+    (await (type "Unit" "mph"))
+    (await (click "Save variable"))
+    (await (click "Delete Speed variable"))
+    (await (click "Save exercise"))
+    (await (.findByRole c "heading" #js {:text "Choose an exercise"}))
+    (await (wait-for #(let [exercise (get-in @d/data [:exercises 0])]
+                        (= {:name "Treadmill" :variables []}
                            exercise))))))
 
 (deftest lists-available-exercises

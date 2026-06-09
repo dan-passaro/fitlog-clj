@@ -3,6 +3,7 @@
    [reitit.frontend.easy :as rfe]
    ["@heroicons/react/24/outline" :refer [PlusIcon TrashIcon]]
    [fitlog.data :as d]
+   [fitlog.util :refer [vec-dissoc vec-insert]]
    [fitlog.routes :as routes]
    [fitlog.ui.lib :refer [h2 human-date-str]]))
 
@@ -18,16 +19,10 @@
 
 (defn- add-set! [workout-idx preceding-set-idx]
   (swap! d/data update-in [:workouts workout-idx :sets]
-         (fn [sets]
-           (vec (concat (subvec sets 0 (inc preceding-set-idx))
-                        [(d/make-set (get-in sets [preceding-set-idx :exercise]))]
-                        (subvec sets (inc preceding-set-idx)))))))
+         vec-insert (inc preceding-set-idx) (d/make-set (get-in @d/data [:workouts workout-idx :sets preceding-set-idx :exercise]))))
 
 (defn- remove-set! [workout-idx set-idx]
-  (swap! d/data update-in [:workouts workout-idx :sets]
-         (fn [sets]
-           (vec (concat (subvec sets 0 set-idx)
-                        (subvec sets (inc set-idx)))))))
+  (swap! d/data update-in [:workouts workout-idx :sets] vec-dissoc set-idx))
 
 (defn- on-set-done-change! [workout-id set-idx event]
   (swap! d/data assoc-in [:workouts workout-id :sets set-idx :completedAt]

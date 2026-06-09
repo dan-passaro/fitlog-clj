@@ -4,10 +4,11 @@
    [reagent.hooks :as rh]
    [reitit.frontend.easy :as rfe]
    ["fuse.js" :as Fuse]
-   ["@heroicons/react/24/outline" :refer [MagnifyingGlassIcon]]
+   ["@heroicons/react/24/outline" :refer [MagnifyingGlassIcon PencilIcon XMarkIcon]]
    [fitlog.data :as d]
    [fitlog.routes :as routes]
-   [fitlog.ui.lib :refer [h2]]))
+   [fitlog.ui.lib :refer [h2]]
+   [fitlog.util :refer [vec-dissoc]]))
 
 (defonce adding-exercise? (r/atom false))
 
@@ -24,6 +25,8 @@
 (defonce filtered-exercises (r/atom []))
 
 (defonce fuse (r/atom nil))
+
+(defonce variable-editors (r/atom {}))
 
 (defn- on-add-exercise [workout-id exercise]
   (swap! d/data update-in [:workouts (int workout-id) :sets] (fnil identity []))
@@ -59,14 +62,15 @@
             [:ul {:class "list"}
              (map-indexed
               (fn [i exercise]
-                ^{:key i} [:li {:class "list-row"}
-                           [:span {:class "list-col-grow"
-                                   :data-testid "exercise-name"}
-                            (:name exercise)]
-                           [:button {:class "btn btn-primary"
-                                     :aria-label (str "Add " (:name exercise))
-                                     :on-click #(on-add-exercise id exercise)}
-                            "+"]])
+                ^{:key i}
+                [:li {:class "list-row"}
+                 [:span {:class "list-col-grow"
+                         :data-testid "exercise-name"}
+                  (:name exercise)]
+                 [:button {:class "btn btn-primary"
+                           :aria-label (str "Add " (:name exercise))
+                           :on-click #(on-add-exercise id exercise)}
+                  "+"]])
               @filtered-exercises)]
             [:p "No exercises match your search."])]
          [:p "There are no exercises available. Create an exercise, then you can
@@ -85,7 +89,8 @@
 (defn reset-new-exercise-form! []
   (reset! exercise-name "")
   (reset! variables [])
-  (reset! adding-exercise? false))
+  (reset! adding-exercise? false)
+  (reset! variable-editors {}))
 
 (defn reset-exercise-variable-form! []
   (reset! variable-name "")
@@ -109,10 +114,47 @@
    (when (seq @variables)
      [:<>
       [:p "Variables"]
-      [:ul (map-indexed
-            (fn [i var]
-              ^{:key i} [:li (str (:name var) " (" (:unit var) ")")])
-            @variables)]])
+      [:ul
+       (doall
+        (map-indexed
+         (fn [i var]
+           ^{:key i}
+           [:li {:class "flex justify-between items-center"}
+            (if (get @variable-editors i)
+              [:form {:on-submit (fn [e]
+                                   (.preventDefault e)
+                                   (swap! variables assoc i (get @variable-editors i))
+                                   (swap! variable-editors dissoc i))}
+               [:label {:class "input"}
+                "Variable name"
+                [:input {:class "input"
+                         :value (get-in @variable-editors [i :name])
+                         :on-change #(swap! variable-editors assoc-in [i :name] (-> % .-target .-value))}]]
+               [:label {:class "input"}
+                "Unit"
+                [:input {:class "input"
+                         :value (get-in @variable-editors [i :unit])
+                         :on-change #(swap! @variable-editors assoc-in [i :unit] (-> % .-target .-value))}]]
+               [:button {:class "btn btn-primary"}
+                "Save variable"]
+               [:button {:class "btn btn-neutral"
+                         :type "button"
+                         :on-click #(swap! variable-editors dissoc i)}
+                "Cancel variable"]]
+              [:<>
+               (str (:name var) " (" (:unit var) ")")
+               (when (empty? @variable-editors)
+                 [:button {:type "button"
+                           :class "btn btn-ghost"
+                           :on-click #(swap! variable-editors assoc i var)
+                           :aria-label (str "Edit " (:name var) " variable")}
+                  [:> PencilIcon {:class "h-[1em]"}]])
+               [:button {:type "button"
+                         :class "btn btn-ghost"
+                         :on-click #(swap! variables vec-dissoc i)
+                         :aria-label (str "Delete " (:name var) " variable")}
+                [:> XMarkIcon {:class "h-[1em]"}]]])])
+         @variables))]])
    (if @adding-variable?
      [:form {:on-submit (fn [e]
                           (.preventDefault e)
@@ -133,10 +175,11 @@
                 :type "button"
                 :on-click reset-exercise-variable-form!}
        "Cancel variable"]]
-     [:button {:class "btn btn-neutral"
-               :type "button"
-               :on-click #(reset! adding-variable? true)}
-      "Add exercise variable"])
+     (when (empty? @variable-editors)
+       [:button {:class "btn btn-neutral"
+                 :type "button"
+                 :on-click #(reset! adding-variable? true)}
+        "Add exercise variable"]))
    [:input {:class "btn btn-primary" :type "submit" :value "Save exercise"
             :form "new-exercise-form"}]
    [:button {:class "btn btn-neutral"
