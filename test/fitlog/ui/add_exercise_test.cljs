@@ -166,3 +166,22 @@
     (await (.type user search "randomstuff"))
     (is (await (.findByText c "No exercises match your search.")))
     (is (await (.findByRole c "searchbox")))))
+
+(deftest-async allows-editing-exercises
+  (set-workouts! (d/make-workout))
+  (set-exercises! (d/make-exercisev "Treadmill" "Speed" "mph" "Time" "mins"))
+  (let [user (setup-user-events)
+        c (render [add-exercise :id "0"])
+        type (make-type user c)
+        click (make-click user c)]
+    (await (click "Edit Treadmill"))
+    (await (.findByText c "Edit Treadmill exercise"))
+    (await (type "Name" "ing"))
+    (await (click "Edit Speed variable"))
+    (await (type "Variable name" "y"))
+    (await (click "Save variable"))
+    (await (click "Delete Time variable"))
+    (await (click "Save exercise"))
+    (await (wait-for #(= [{:name "Treadmilling"
+                           :variables [{:name "Speedy" :unit "mph"}]}]
+                         (:exercises @d/data))))))

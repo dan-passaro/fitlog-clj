@@ -4,7 +4,7 @@
    [reagent.hooks :as rh]
    [reitit.frontend.easy :as rfe]
    ["fuse.js" :as Fuse]
-   ["@heroicons/react/24/outline" :refer [MagnifyingGlassIcon PencilIcon XMarkIcon]]
+   ["@heroicons/react/24/outline" :refer [MagnifyingGlassIcon PlusIcon PencilIcon XMarkIcon]]
    [fitlog.data :as d]
    [fitlog.routes :as routes]
    [fitlog.ui.lib :refer [h2]]
@@ -27,6 +27,8 @@
 (defonce fuse (r/atom nil))
 
 (defonce variable-editors (r/atom {}))
+
+(defonce editing-exercise-idx (r/atom nil))
 
 (defn- on-add-exercise [workout-id exercise]
   (swap! d/data update-in [:workouts (int workout-id) :sets] (fnil identity []))
@@ -63,14 +65,21 @@
              (map-indexed
               (fn [i exercise]
                 ^{:key i}
-                [:li {:class "list-row"}
+                [:li {:class "list-row flex justify-between items-center"}
                  [:span {:class "list-col-grow"
                          :data-testid "exercise-name"}
                   (:name exercise)]
-                 [:button {:class "btn btn-primary"
-                           :aria-label (str "Add " (:name exercise))
-                           :on-click #(on-add-exercise id exercise)}
-                  "+"]])
+                 [:span
+                  [:button {:class "btn btn-sm btn-ghost"
+                            :type "button"
+                            :on-click #(reset! editing-exercise-idx i)
+                            :aria-label (str "Edit " (:name exercise))}
+                   [:> PencilIcon {:class "h-[1em]"}]]
+                  [:button {:class "btn btn-sm btn-ghost"
+                            :type "button"
+                            :aria-label (str "Add " (:name exercise))
+                            :on-click #(on-add-exercise id exercise)}
+                   [:> PlusIcon {:class "h-[1em]"}]]]])
               @filtered-exercises)]
             [:p "No exercises match your search."])]
          [:p "There are no exercises available. Create an exercise, then you can
@@ -86,10 +95,11 @@
   {:value (deref atom-var)
    :on-change #(reset! atom-var (-> % .-target .-value))})
 
-(defn reset-new-exercise-form! []
+(defn reset-exercise-form! []
   (reset! exercise-name "")
   (reset! variables [])
   (reset! adding-exercise? false)
+  (reset! editing-exercise-idx nil)
   (reset! variable-editors {}))
 
 (defn reset-exercise-variable-form! []
@@ -97,16 +107,17 @@
   (reset! variable-unit "")
   (reset! adding-variable? false))
 
-(defn- create-new-exercise []
-  [:<>
-   [h2 "Create an exercise"]
-   [:form {:id "new-exercise-form"
+(defn- exercise-form [data title submit-action]
+  (reset! variables (:variables data))
+  (reset! exercise-name (:name data))
+  (fn []
+    [:<>
+   [h2 title]
+   [:form {:id "exercise-form"
            :on-submit (fn [e]
                         (.preventDefault e)
-                        (swap! d/data
-                               update :exercises
-                               conj (d/make-exercise @exercise-name @variables))
-                        (reset-new-exercise-form!))}
+                        (submit-action (d/make-exercise @exercise-name @variables))
+                        (reset-exercise-form!))}
     [:label {:for "exercise-name" :class "input"}
      "Name"
      [:input (merge {:id "exercise-name" :class "input"}
@@ -181,13 +192,25 @@
                  :on-click #(reset! adding-variable? true)}
         "Add exercise variable"]))
    [:input {:class "btn btn-primary" :type "submit" :value "Save exercise"
-            :form "new-exercise-form"}]
+            :form "exercise-form"}]
    [:button {:class "btn btn-neutral"
              :type "button"
-             :on-click reset-new-exercise-form!}
-    "Cancel"]])
+             :on-click reset-exercise-form!}
+    "Cancel"]]))
+
+(defn- create-new-exercise []
+  (exercise-form (d/make-exercise "" [])
+                 "Create an exercise"
+                 (partial swap! d/data update :exercises conj)))
+
+(defn- edit-exercise [exercise-idx]
+  (let [exercise (get-in @d/data [:exercises exercise-idx])]
+    (exercise-form exercise
+                   (str "Edit " (:name exercise) " exercise")
+                   (partial swap! d/data assoc-in [:exercises exercise-idx]))))
 
 (defn add-exercise [& {:keys [id]}]
-  (if @adding-exercise?
-    [create-new-exercise]
-    [add-existing-exercise id]))
+  (cond
+    @adding-exercise? [create-new-exercise]
+    @editing-exercise-idx [edit-exercise @editing-exercise-idx]
+    :else [add-existing-exercise id]))
