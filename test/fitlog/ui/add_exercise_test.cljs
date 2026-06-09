@@ -99,12 +99,16 @@
     (await (click "Add exercise variable"))
     (await (type "Variable name" "Speed"))
     (await (type "Unit" "mph"))
+    (r/flush)
     (await (click "Save variable"))
+    (await (.findByText c "Speed (mph)"))
     (await (click "Delete Speed variable"))
+    (r/flush)
     (await (click "Save exercise"))
     (await (.findByRole c "heading" #js {:text "Choose an exercise"}))
     (await (wait-for #(let [exercise (get-in @d/data [:exercises 0])]
-                        (= {:name "Treadmill" :variables []}
+                        (= {:name "Treadmill"
+                            :variables []}
                            exercise))))))
 
 (deftest lists-available-exercises
