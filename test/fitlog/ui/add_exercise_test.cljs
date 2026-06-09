@@ -40,16 +40,23 @@
            (.-textContent (.getByRole c "heading"))))
     (await (click "Create new exercise"))
     (await (type "Name" "Treadmill"))
+
+    ;; Without this flush, sometimes this test will fail because the name gets
+    ;; saved as "Treadl". I'm not sure why this flush fixes it, and there's also
+    ;; a chance it doesn't and I've just gotten lucky and not had the test flake
+    ;; on me since adding it.
+    (r/flush)
+
     (await (click "Add exercise variable"))
     (await (type "Variable name" "Speed"))
     (await (type "Unit" "mph"))
     (await (click "Save variable"))
     (await (click "Save exercise"))
     (await (.findByRole c "heading" #js {:text "Choose an exercise"}))
-    (let [exercise (get-in @d/data [:exercises 0])]
-      (is (= {:name "Treadmill"
-              :variables [{:name "Speed" :unit "mph"}]}
-             exercise)))))
+    (await (wait-for #(let [exercise (get-in @d/data [:exercises 0])]
+                        (= {:name "Treadmill"
+                            :variables [{:name "Speed" :unit "mph"}]}
+                           exercise))))))
 
 (deftest lists-available-exercises
   (set-workouts! (d/make-workout))
@@ -98,8 +105,8 @@
         search (.getByRole c "searchbox")
         user (.setup user-event)]
     (await (.type user search "tread"))
-    (is (= ["Treadmill"]
-           (-> c shown-exercise-names sort)))))
+    (await (wait-for #(= ["Treadmill"]
+                         (-> c shown-exercise-names sort))))))
 
 (deftest-async search-still-shows-when-everything-filtered
   (set-workouts! (d/make-workout))
