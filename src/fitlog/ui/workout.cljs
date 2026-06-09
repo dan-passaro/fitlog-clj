@@ -1,7 +1,7 @@
 (ns fitlog.ui.workout
   (:require
    [reitit.frontend.easy :as rfe]
-   ["@heroicons/react/24/outline" :refer [PlusIcon]]
+   ["@heroicons/react/24/outline" :refer [PlusIcon TrashIcon]]
    [fitlog.data :as d]
    [fitlog.routes :as routes]
    [fitlog.ui.lib :refer [h2 human-date-str]]))
@@ -22,6 +22,12 @@
            (vec (concat (subvec sets 0 (inc preceding-set-idx))
                         [(d/make-set (get-in sets [preceding-set-idx :exercise]))]
                         (subvec sets (inc preceding-set-idx)))))))
+
+(defn- remove-set! [workout-idx set-idx]
+  (swap! d/data update-in [:workouts workout-idx :sets]
+         (fn [sets]
+           (vec (concat (subvec sets 0 set-idx)
+                        (subvec sets (inc set-idx)))))))
 
 (defn workout [& {:keys [id]}]
   (let [id (parse-long id)
@@ -88,7 +94,12 @@
                                     :type "checkbox"
                                     :id input-id
                                     :defaultChecked (boolean (get-in @d/data [:workouts id :sets set-idx :completedAt]))
-                                    :on-change #(swap! d/data assoc-in [:workouts id :sets set-idx :completedAt] (.toISOString (js/Date.)))}]]])]])
+                                    :on-change #(swap! d/data assoc-in [:workouts id :sets set-idx :completedAt] (.toISOString (js/Date.)))}]
+                           [:button {:class "btn btn-ghost"
+                                     :type "button"
+                                     :aria-label (str "Delete " (:name exercise) " set")
+                                     :on-click #(remove-set! id set-idx)}
+                            [:> TrashIcon {:class "h-[1.2em]"}]]]])]])
                    workout-set-group))]]]))
           (partition-by (comp :name :exercise second) (map vector (range) (:sets self)))))]
        [:p "No exercises. Add an exercise to get started!"])

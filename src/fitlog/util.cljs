@@ -8,3 +8,6 @@
     (throw (ex-info (str "Missing key: " key)
                     {:key key}
                     :key-missing))))
+
+(defn not-implemented-error []
+  (ex-info "Not implemented" {} :not-implemented))

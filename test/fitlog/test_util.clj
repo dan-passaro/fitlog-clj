@@ -14,6 +14,10 @@
      (try
        ~@body
        (catch :default e#
+
+         ;; this will output a stacktrace, although it's kind of useless because
+         ;; it doesn't use source maps and points to opaque JS
+         (js/console.error "Async test threw:" e#)
          (cljs.test/is false (str "async test threw: " e#))))))
 
 (defmacro with-mock-date [date-val & body]

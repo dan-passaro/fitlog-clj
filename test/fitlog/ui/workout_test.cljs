@@ -2,11 +2,11 @@
   (:require
    [cljs.test :refer-macros [deftest is testing]]
    [reagent.core :as r]
-   ["@testing-library/dom" :refer [within]]
+   ["@testing-library/dom" :refer [waitFor waitForElementToBeRemoved within]]
    ["@testing-library/react" :as rtl]
    [fitlog.routes :as routes]
    [fitlog.data :as d]
-   [fitlog.test-util :refer [deftest-async get-nav render set-exercises! set-workouts! setup-user-events use-fitlog-fixtures with-mock-date]]
+   [fitlog.test-util :refer [deftest-async get-nav render set-exercises! set-workouts! setup-user-events use-fitlog-fixtures wait-for with-mock-date]]
    [fitlog.ui.workout :refer [workout]]))
 
 (use-fitlog-fixtures)
@@ -127,15 +127,50 @@
         treadmill (d/make-exercisev "Treadmill")]
     (set-workouts! (d/make-workout :sets [(d/make-set bench-press)
                                           (d/make-set treadmill)]))
-    (let [c (render [workout :id "0"])
-          workout-cards (.getAllByRole c "region")
-          user (setup-user-events)]
-      (is (= 2 (count workout-cards)))
-      (is (= 1 (count (.getAllByRole (within (nth workout-cards 0)) "listitem"))))
-      (await (.click user (.getByRole (within (nth workout-cards 0))
-                                      "button" #js {:name "Add Bench press set"})))
-      (is (= 2 (count (.getAllByRole (within (nth workout-cards 0)) "listitem"))))
-      (is (= 1 (count (.getAllByRole (within (nth workout-cards 1)) "listitem"))))
-      (await (.click user (.getByRole (within (nth workout-cards 1))
-                                      "button" #js {:name "Add Treadmill set"})))
-      (is (= 2 (count (.getAllByRole (within (nth workout-cards 1)) "listitem")))))))
+    (let [user (setup-user-events)
+          c (render [workout :id "0"])
+          cards #(.getAllByRole c "region")
+          card (fn [n] (nth (cards) n))
+          sets-in (fn [card-el] (.getAllByRole (within card-el) "listitem"))
+          click (fn [name & {:keys [in]}]
+                  (.click user (.getByRole (within in) "button" #js {:name name})))]
+      (is (= 2 (count (cards))))
+      (is (= 1 (count (sets-in (card 0)))))
+      (await (click "Add Bench press set" :in (card 0)))
+      (await (wait-for #(= 2 (count (sets-in (card 0))))))
+      (is (= 2 (count (sets-in (card 0)))))
+      (is (= 1 (count (sets-in (card 1)))))
+      (await (click "Add Treadmill set" :in (card 1)))
+      (await (wait-for #(= 2 (count (sets-in (card 1))))))
+      (is (= 2 (count (sets-in (card 1))))))))
+
+(deftest-async exercise-card-has-buttons-to-delete-a-set
+  (let [bench-press (d/make-exercisev "Bench press")
+        treadmill (d/make-exercisev "Treadmill")]
+    (set-workouts! (d/make-workout :sets [(d/make-set bench-press)
+                                          (d/make-set bench-press)
+                                          (d/make-set treadmill)]))
+    (let [user (setup-user-events)
+          c (render [workout :id "0"])
+          cards #(.getAllByRole c "region")
+          card (fn [i] (nth (cards) i))
+          sets-in (fn [card-elt] (.getAllByRole (within card-elt) "listitem"))]
+
+      ;; Sanity checks - data initially shows up as expected
+      (is (= 2 (count (cards))))
+      (is (= 2 (count (sets-in (card 0)))))
+
+      (await (.click user (-> (.getAllByRole (within (card 0))
+                                             "button"
+                                             #js {:name "Delete Bench press set"})
+                              (nth 1))))
+      (await (wait-for #(= 1 (count (sets-in (card 0))))))
+      (is (= 1 (count (.getAllByRole (within (card 0)) "listitem"))))
+
+      ;; Sanity check - treadmill should still have one set
+      (is (= 1 (count (.getAllByRole (within (card 1)) "listitem"))))
+      (await (.click user (.getByRole (within (card 1))
+                                      "button" #js {:name "Delete Treadmill set"})))
+      ;; No treadmill sets left - the card should be gone
+      (await (wait-for #(= 1 (count (cards)))))
+      (is (= 1 (count (cards)))))))

@@ -3,6 +3,7 @@
   (:require
    [reagent.core :as r]
    ["mockdate" :as MockDate]
+   ["@testing-library/dom" :refer [waitFor]]
    ["@testing-library/react" :as rtl]
    ["@testing-library/user-event" :as user-event-mod]
    [fitlog.data :as d]
@@ -38,5 +39,9 @@
 
 (def user-event user-event-mod/default)
 
-(defn setup-user-events []
-  (.setup user-event))
+(defn setup-user-events [& {:keys [] :as opts}]
+  (.setup user-event (clj->js (or opts {}))))
+
+(defn wait-for [test]
+  (waitFor #(when (not (test))
+              (throw (js/Error. (str "waiting for " test))))))

@@ -9,7 +9,7 @@
      [fitlog.routes :as routes]
      [fitlog.data :as d]
      [fitlog.nav :as nav]
-     [fitlog.test-util :refer [deftest-async get-nav render set-exercises! set-workouts! use-fitlog-fixtures]]
+     [fitlog.test-util :refer [deftest-async get-nav render set-exercises! set-workouts! use-fitlog-fixtures wait-for]]
      [fitlog.ui.add-exercise :as ae :refer [add-exercise]]))
 
 (def user-event user-event-mod/default)
@@ -31,22 +31,20 @@
   (set-workouts! (d/make-workout))
   (set-exercises!)
   (let [user (.setup user-event)
-        c (render [add-exercise :id "0"])]
+        c (render [add-exercise :id "0"])
+        click (^:async fn [btn]
+               (.click user (await (.findByRole c "button" #js {:name btn}))))
+        type (^:async fn [field-name value]
+              (.type user (await (.findByRole c "textbox" #js {:name field-name})) value))]
     (is (= "Choose an exercise"
-           (.. (.getByRole c "heading") -textContent)))
-    (await (.click user (.getByText c "Create new exercise")))
-    (let [name-field (await (.findByRole c "textbox" #js {:name "Name"}))
-          add-variable-btn (.getByRole c "button" #js {:name "Add exercise variable"})]
-      (await (.type user name-field "Treadmill"))
-      (await (.click user add-variable-btn))
-      (let [var-name-field (await (.findByRole c "textbox" #js {:name "Variable name"}))
-            unit-field (.getByRole c "textbox" #js {:name "Unit"})
-            save-variable (.getByRole c "button" #js {:name "Save variable"})]
-        (await (.type user var-name-field "Speed"))
-        (await (.type user unit-field "mph"))
-        (await (.click user save-variable)))
-      (let [save-exercise-btn (await (.findByRole c "button" #js {:name "Save exercise"}))]
-        (await (.click user save-exercise-btn))))
+           (.-textContent (.getByRole c "heading"))))
+    (await (click "Create new exercise"))
+    (await (type "Name" "Treadmill"))
+    (await (click "Add exercise variable"))
+    (await (type "Variable name" "Speed"))
+    (await (type "Unit" "mph"))
+    (await (click "Save variable"))
+    (await (click "Save exercise"))
     (await (.findByRole c "heading" #js {:text "Choose an exercise"}))
     (let [exercise (get-in @d/data [:exercises 0])]
       (is (= {:name "Treadmill"
@@ -88,13 +86,12 @@
   (set-exercises! (d/make-exercise "Treadmill" [])
                   (d/make-exercise "Bench press" [])
                   (d/make-exercise "Chest press" []))
-  (let [c (render [add-exercise :id "0"])
-        search (.getByRole c "searchbox")
-        user (.setup user-event)]
+  (let [user (.setup user-event)
+        c (render [add-exercise :id "0"])
+        search (.getByRole c "searchbox")]
     (await (.type user search "press"))
-
-    ;; THIS ASSERTION IS FLAKY!! If this failed, just try re-running
-    ;; I tried adding a (waitFor) here but it didn't seem to help...
+    (await (wait-for #(= ["Bench press" "Chest press"]
+                         (-> c  shown-exercise-names sort))))
     (is (= ["Bench press" "Chest press"]
            (-> c  shown-exercise-names sort))))
   (let [c (render [add-exercise :id "0"])
