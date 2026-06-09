@@ -102,6 +102,17 @@
             done-checkbox (await (.findByRole c "checkbox" #js {:name "Done"}))]
         (is (not (.-checked done-checkbox)))))))
 
+;; This test addresses bug #34
+(deftest-async sets-can-be-unmarked-as-done
+  (let [treadmill (d/make-exercisev "Treadmill" "Speed" "mph")]
+    (set-workouts! (d/make-workout
+                    :sets [(d/make-set treadmill
+                                       :completed-at (.toISOString (js/Date.)))]))
+    (let [user (setup-user-events)
+          c (render [workout :id "0"])]
+      (await (.click user (.getByRole c "checkbox" #js {:name "Done"})))
+      (is (nil? (get-in @d/data [:workouts 0 :sets 0 :completedAt]))))))
+
 (deftest groups-consecutive-sets-of-the-same-exercise-together
   (let [treadmill (d/make-exercisev "Treadmill" "Speed" "mph")
         bench-press (d/make-exercisev "Bench press" "Weight" "lbs")]

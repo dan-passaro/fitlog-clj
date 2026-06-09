@@ -29,6 +29,11 @@
            (vec (concat (subvec sets 0 set-idx)
                         (subvec sets (inc set-idx)))))))
 
+(defn- on-set-done-change! [workout-id set-idx event]
+  (swap! d/data assoc-in [:workouts workout-id :sets set-idx :completedAt]
+         (when (-> event .-target .-checked)
+           (-> (js/Date.) .toISOString))))
+
 (defn workout [& {:keys [id]}]
   (let [id (parse-long id)
         self (get-in @d/data [:workouts id])]
@@ -94,7 +99,7 @@
                                     :type "checkbox"
                                     :id input-id
                                     :defaultChecked (boolean (get-in @d/data [:workouts id :sets set-idx :completedAt]))
-                                    :on-change #(swap! d/data assoc-in [:workouts id :sets set-idx :completedAt] (.toISOString (js/Date.)))}]
+                                    :on-change (partial on-set-done-change! id set-idx)}]
                            [:button {:class "btn btn-ghost"
                                      :type "button"
                                      :aria-label (str "Delete " (:name exercise) " set")
