@@ -79,7 +79,7 @@
                                                    :type "text"
                                                    :inputMode "decimal"
                                                    :on-change #(update-set-var! id set-idx var-idx (-> % .-target .-value))
-                                                   :default-value (get-in @d/data [:workouts id :sets set-idx :variables var-idx 1])
+                                                   :value (get-in @d/data [:workouts id :sets set-idx :variables var-idx 1])
                                                    :placeholder (:unit var)}]]))
                                      (-> workout-set :exercise :variables)))
                        (let [input-id (gensym)]

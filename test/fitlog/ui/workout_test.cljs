@@ -211,3 +211,21 @@
       (is (= (d/make-set row :vars {"Weight" "80"
                                     "Reps" "6"})
              (get-in @d/data [:workouts 0 :sets 4]))))))
+
+(deftest-async correctly-shows-sets-after-middle-deletion
+  ;; See issue #36
+  (let [treadmill (d/make-exercisev "Treadmill" "Time" "mins")]
+    (set-exercises! treadmill)
+    (set-workouts! (d/make-workout
+                    :sets [(d/make-set treadmill :vars {"Time" "3"})
+                           (d/make-set treadmill :vars {"Time" "4"})
+                           (d/make-set treadmill :vars {"Time" "5"})]))
+
+    (let [user (setup-user-events)
+          c (render [workout :id "0"])]
+
+      (let [delete-set-2 (second (await (.findAllByRole c "button" #js {:name "Delete Treadmill set"})))]
+        (await (.click user delete-set-2)))
+      (await (wait-for #(= 2 (count (.queryAllByRole c "textbox")))))
+      (is (= ["3" "5"]
+             (map #(.-value %) (await (.findAllByRole c "textbox"))))))))
