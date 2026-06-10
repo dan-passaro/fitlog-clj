@@ -31,18 +31,28 @@
   (make-exercise name (mapv (partial apply make-var)
                             (partition 2 vars))))
 
-(defn make-set [exercise & {:keys [completed-at vars]
-                            :or {completed-at nil
-                                 vars {}}}]
+(defn make-set
+  "Create a set.
+
+  vars - a map of variable names to values. More ergonomic to write; useful in
+  test code. Ignored if variables is given.
+
+  variables - a sequence of [(d/make-var ...) value] pairs. Suitable for copying
+  from an existing set."
+  [exercise & {:keys [completed-at vars variables]
+               :or {completed-at nil
+                    vars {}
+                    variables []}}]
   (merge
    {:exercise exercise
-    :variables (mapv (fn [var]
-                       (let [var-val (get vars (:name var))]
-                         [var var-val]))
-                     (:variables exercise))}
-   (if completed-at
-     {:completedAt completed-at}
-     {})))
+    :variables (if (seq variables)
+                 (vec variables)
+                 (mapv (fn [var]
+                         (let [var-val (get vars (:name var))]
+                           [var var-val]))
+                       (:variables exercise)))}
+   (when completed-at
+     {:completedAt completed-at})))
 
 (defn persist-data
   "Save data to local storage."

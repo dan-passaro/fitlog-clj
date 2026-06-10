@@ -18,8 +18,11 @@
   (swap! d/data assoc-in [:workouts workout-idx :sets set-idx :variables var-idx 1] new-val))
 
 (defn- add-set! [workout-idx preceding-set-idx]
-  (swap! d/data update-in [:workouts workout-idx :sets]
-         vec-insert (inc preceding-set-idx) (d/make-set (get-in @d/data [:workouts workout-idx :sets preceding-set-idx :exercise]))))
+  (let [preceding-set (get-in @d/data [:workouts workout-idx :sets preceding-set-idx])
+        new-set (d/make-set (:exercise preceding-set)
+                            :variables (:variables preceding-set))]
+    (swap! d/data update-in [:workouts workout-idx :sets]
+           vec-insert (inc preceding-set-idx) new-set)))
 
 (defn- remove-set! [workout-idx set-idx]
   (swap! d/data update-in [:workouts workout-idx :sets] vec-dissoc set-idx))

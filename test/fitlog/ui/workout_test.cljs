@@ -6,7 +6,7 @@
    ["@testing-library/react" :as rtl]
    [fitlog.routes :as routes]
    [fitlog.data :as d]
-   [fitlog.test-util :refer [deftest-async get-nav render set-exercises! set-workouts! setup-user-events use-fitlog-fixtures wait-for with-mock-date]]
+   [fitlog.test-util :refer [deftest-async get-nav make-click render set-exercises! set-workouts! setup-user-events use-fitlog-fixtures wait-for with-mock-date]]
    [fitlog.ui.workout :refer [workout]]))
 
 (use-fitlog-fixtures)
@@ -185,3 +185,29 @@
       ;; No treadmill sets left - the card should be gone
       (await (wait-for #(= 1 (count (cards)))))
       (is (= 1 (count (cards)))))))
+
+(deftest-async prefills-set-variable-with-most-recent-previous-values
+  (let [bench-press (d/make-exercisev "Bench press" "Weight" "lbs" "Reps" "#")
+        row (d/make-exercisev "Row" "Weight" "lbs" "Reps" "#")]
+    (set-exercises! bench-press row)
+    (set-workouts! (d/make-workout
+                    :sets [(d/make-set bench-press :vars {"Weight" "100"
+                                                          "Reps" "6"})
+                           (d/make-set bench-press :vars {"Weight" "100"
+                                                          "Reps" "5"})
+                           (d/make-set row :vars {"Weight" "80"
+                                                  "Reps" "6"})]))
+
+    (let [user (setup-user-events)
+          c (render [workout :id "0"])
+          click (make-click user c)]
+
+      (await (click "Add Bench press set"))
+      (is (= (d/make-set bench-press :vars {"Weight" "100"
+                                            "Reps" "5"})
+             (get-in @d/data [:workouts 0 :sets 2])))
+
+      (await (click "Add Row set"))
+      (is (= (d/make-set row :vars {"Weight" "80"
+                                    "Reps" "6"})
+             (get-in @d/data [:workouts 0 :sets 4]))))))

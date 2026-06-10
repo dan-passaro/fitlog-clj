@@ -45,3 +45,12 @@
 (defn wait-for [test]
   (waitFor #(when (not (test))
               (throw (js/Error. (str "waiting for " test))))))
+
+(defn make-click [user c]
+  (^:async fn [btn & {:keys [role]
+                      :or {role "button"}}]
+   (.click user (await (.findByRole c role #js {:name btn})))))
+
+(defn make-type [user c]
+  (^:async fn [field-name value]
+   (.type user (await (.findByRole c "textbox" #js {:name field-name})) value)))

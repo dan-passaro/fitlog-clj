@@ -30,10 +30,22 @@
 
 (defonce editing-exercise-idx (r/atom nil))
 
+(defn- most-recent-set-of [exercise]
+  (let [workouts (sort-by :createdAt > (:workouts @d/data))]
+    (some (fn [workout]
+            (last (filter #(= (:exercise %) exercise) (:sets workout))))
+          workouts)))
+
 (defn- on-add-exercise [workout-id exercise]
-  (swap! d/data update-in [:workouts (int workout-id) :sets] (fnil identity []))
-  (swap! d/data update-in [:workouts (int workout-id) :sets] conj (d/make-set exercise))
-  (rfe/navigate routes/workout {:path-params {:id workout-id}}))
+  (let [workout-id (int workout-id)
+        workouts (sort-by :createdAt (:workouts @d/data))
+        prev-set (most-recent-set-of exercise)
+        new-set (apply d/make-set exercise (if prev-set
+                                             [{:variables (:variables prev-set)}]
+                                             []))]
+    (swap! d/data update-in [:workouts workout-id :sets] (fnil identity []))
+    (swap! d/data update-in [:workouts workout-id :sets] conj new-set)
+    (rfe/navigate routes/workout {:path-params {:id workout-id}})))
 
 (defn- js->clj-kw [v]
   (js->clj v :keywordize-keys true))
@@ -82,8 +94,8 @@
                    [:> PlusIcon {:class "h-[1em]"}]]]])
               @filtered-exercises)]
             [:p "No exercises match your search."])]
-         [:p "There are no exercises available. Create an exercise, then you can
-       add it to your workout."]))
+         [:p (str "There are no exercises available. Create an exercise, then "
+                  "you can add it to your workout.")]))
      [:button {:class "btn btn-primary"
                :on-click #(reset! adding-exercise? true)}
       "Create new exercise"]

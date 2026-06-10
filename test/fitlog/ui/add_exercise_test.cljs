@@ -1,16 +1,16 @@
 (ns fitlog.ui.add-exercise-test
-    (:require
-     [cljs.test :refer [deftest is testing]]
-     [reagent.core :as r]
-     [reitit.frontend.easy :as rfe]
-     ["@testing-library/react" :as rtl]
-     ["@testing-library/dom" :refer [waitFor]]
-     ["@testing-library/user-event" :as user-event-mod]
-     [fitlog.routes :as routes]
-     [fitlog.data :as d]
-     [fitlog.nav :as nav]
-     [fitlog.test-util :refer [deftest-async get-nav render set-exercises! set-workouts! setup-user-events use-fitlog-fixtures wait-for]]
-     [fitlog.ui.add-exercise :as ae :refer [add-exercise]]))
+  (:require
+   [cljs.test :refer [deftest is testing]]
+   [reagent.core :as r]
+   [reitit.frontend.easy :as rfe]
+   ["@testing-library/react" :as rtl]
+   ["@testing-library/dom" :refer [waitFor]]
+   ["@testing-library/user-event" :as user-event-mod]
+   [fitlog.routes :as routes]
+   [fitlog.data :as d]
+   [fitlog.nav :as nav]
+   [fitlog.test-util :refer [deftest-async get-nav make-click make-type render set-exercises! set-workouts! setup-user-events use-fitlog-fixtures wait-for with-mock-date]]
+   [fitlog.ui.add-exercise :as ae :refer [add-exercise]]))
 
 (def user-event user-event-mod/default)
 
@@ -21,13 +21,6 @@
   (let [exercise-names (.getAllByTestId c "exercise-name")]
     (map #(.-textContent %) exercise-names)))
 
-(defn- make-click [user c]
-  (^:async fn [btn]
-   (.click user (await (.findByRole c "button" #js {:name btn})))))
-
-(defn- make-type [user c]
-  (^:async fn [field-name value]
-   (.type user (await (.findByRole c "textbox" #js {:name field-name})) value)))
 
 (deftest shows-header
   (set-workouts! (d/make-workout))
@@ -189,3 +182,36 @@
     (await (wait-for #(= [{:name "Treadmilling"
                            :variables [{:name "Speedy" :unit "mph"}]}]
                          (:exercises @d/data))))))
+
+(deftest-async prefills-set-variables-with-most-recent-previous-values
+  (let [bench-press (d/make-exercisev "Bench press" "Weight" "lbs" "Reps" "#")
+        row (d/make-exercisev "Row" "Weight" "lbs" "Reps" "#")]
+    (set-exercises! bench-press row)
+    (set-workouts! (with-mock-date "2020-05-10" ;; later - takes precendence
+                     (d/make-workout
+                      :sets (d/make-set row :vars {"Weight" "90"
+                                                   "Reps" "6"})))
+                   (with-mock-date "2020-05-07"
+                     (d/make-workout
+                      :sets [(d/make-set bench-press :vars {"Weight" "100"
+                                                            "Reps" "6"})
+                             (d/make-set bench-press :vars {"Weight" "100"
+                                                            "Reps" "5"})
+                             (d/make-set row :vars {"Weight" "80"
+                                                    "Reps" "6"})]))
+                   (d/make-workout))
+    (let [user (setup-user-events)
+          c (render [add-exercise :id "2"])
+          click (make-click user c)]
+      (await (click "Add Bench press"))
+
+      (is (= [(d/make-set bench-press :vars {"Weight" "100"
+                                             "Reps" "5"})]
+             (get-in @d/data [:workouts 2 :sets])))
+
+      (await (click "Add Row"))
+      (is (= [(d/make-set bench-press :vars {"Weight" "100"
+                                             "Reps" "5"})
+              (d/make-set row :vars {"Weight" "80"
+                                     "Reps" "6"})]
+             (get-in @d/data [:workouts 2 :sets]))))))
