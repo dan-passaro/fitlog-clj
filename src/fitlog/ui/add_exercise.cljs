@@ -12,12 +12,6 @@
 
 (defonce adding-exercise? (r/atom false))
 
-(defonce adding-variable? (r/atom false))
-
-(defonce variable-name (r/atom ""))
-
-(defonce variable-unit (r/atom ""))
-
 (defonce variables (r/atom []))
 
 (defonce exercise-name (r/atom ""))
@@ -46,6 +40,25 @@
     (swap! d/data update-in [:workouts workout-id :sets] (fnil identity []))
     (swap! d/data update-in [:workouts workout-id :sets] conj new-set)
     (rfe/navigate routes/workout {:path-params {:id workout-id}})))
+
+(defn- set-exercise-form-initial! [exercise]
+  (reset! exercise-name (:name exercise))
+  (reset! variables (:variables exercise))
+  (reset! variable-editors {}))
+
+(defn- cancel-exercise-form! []
+  (reset! adding-exercise? false)
+  (reset! editing-exercise-idx nil))
+
+(defn- set-edit-exercise! [exercise-idx]
+  (let [exercise (get-in @d/data [:exercises exercise-idx])]
+    (set-exercise-form-initial! exercise))
+  (reset! editing-exercise-idx exercise-idx))
+
+(defn- set-add-exercise! []
+  (set-exercise-form-initial! (d/make-exercise))
+  (reset! variable-editors {})
+  (reset! adding-exercise? true))
 
 (defn- js->clj-kw [v]
   (js->clj v :keywordize-keys true))
@@ -84,7 +97,7 @@
                  [:span
                   [:button {:class "btn btn-sm btn-ghost"
                             :type "button"
-                            :on-click #(reset! editing-exercise-idx i)
+                            :on-click #(set-edit-exercise! i)
                             :aria-label (str "Edit " (:name exercise))}
                    [:> PencilIcon {:class "h-[1em]"}]]
                   [:button {:class "btn btn-sm btn-ghost"
@@ -97,7 +110,7 @@
          [:p (str "There are no exercises available. Create an exercise, then "
                   "you can add it to your workout.")]))
      [:button {:class "btn btn-primary"
-               :on-click #(reset! adding-exercise? true)}
+               :on-click set-add-exercise!}
       "Create new exercise"]
      [:a {:href (rfe/href routes/workout {:id id})
           :class "btn btn-neutral"}
@@ -107,108 +120,114 @@
   {:value (deref atom-var)
    :on-change #(reset! atom-var (-> % .-target .-value))})
 
-(defn reset-exercise-form! []
-  (reset! exercise-name "")
-  (reset! variables [])
-  (reset! adding-exercise? false)
-  (reset! editing-exercise-idx nil)
-  (reset! variable-editors {}))
+;; DELETEME - inline this alias
+(def reset-exercise-form! cancel-exercise-form!)
 
-(defn reset-exercise-variable-form! []
-  (reset! variable-name "")
-  (reset! variable-unit "")
-  (reset! adding-variable? false))
+(defn- make-var-editor [var]
+  {:var var :original-name (:name var)})
 
 (defn- exercise-form [data title submit-action]
-  (reset! variables (:variables data))
-  (reset! exercise-name (:name data))
-  (fn []
-    [:<>
-   [h2 title]
-   [:form {:id "exercise-form"
-           :on-submit (fn [e]
-                        (.preventDefault e)
-                        (submit-action (d/make-exercise @exercise-name @variables))
-                        (reset-exercise-form!))}
-    [:label {:for "exercise-name" :class "input"}
-     "Name"
-     [:input (merge {:id "exercise-name" :class "input"}
-                    (bind-textinput-to exercise-name))]]]
-   (when (seq @variables)
-     [:<>
-      [:p "Variables"]
-      [:ul
-       (doall
-        (map-indexed
-         (fn [i var]
-           ^{:key i}
-           [:li {:class "flex justify-between items-center"}
-            (if (get @variable-editors i)
-              [:form {:on-submit (fn [e]
-                                   (.preventDefault e)
-                                   (swap! variables assoc i (get @variable-editors i))
-                                   (swap! variable-editors dissoc i))}
-               [:label {:class "input"}
-                "Variable name"
-                [:input {:class "input"
-                         :value (get-in @variable-editors [i :name])
-                         :on-change #(swap! variable-editors assoc-in [i :name] (-> % .-target .-value))}]]
-               [:label {:class "input"}
-                "Unit"
-                [:input {:class "input"
-                         :value (get-in @variable-editors [i :unit])
-                         :on-change #(swap! @variable-editors assoc-in [i :unit] (-> % .-target .-value))}]]
-               [:button {:class "btn btn-primary"}
-                "Save variable"]
-               [:button {:class "btn btn-neutral"
-                         :type "button"
-                         :on-click #(swap! variable-editors dissoc i)}
-                "Cancel variable"]]
-              [:<>
-               (str (:name var) " (" (:unit var) ")")
-               (when (empty? @variable-editors)
-                 [:button {:type "button"
-                           :class "btn btn-ghost"
-                           :on-click #(swap! variable-editors assoc i var)
-                           :aria-label (str "Edit " (:name var) " variable")}
-                  [:> PencilIcon {:class "h-[1em]"}]])
-               [:button {:type "button"
-                         :class "btn btn-ghost"
-                         :on-click #(swap! variables vec-dissoc i)
-                         :aria-label (str "Delete " (:name var) " variable")}
-                [:> XMarkIcon {:class "h-[1em]"}]]])])
-         @variables))]])
-   (if @adding-variable?
-     [:form {:on-submit (fn [e]
-                          (.preventDefault e)
-                          (swap! variables conj {:name @variable-name
-                                                 :unit @variable-unit})
-                          (reset-exercise-variable-form!))}
-      [:label {:for "variable-name" :class "input"}
-       "Variable name"
-       [:input (merge {:id "variable-name" :class "input"}
-                      (bind-textinput-to variable-name))]]
-      [:label {:for "unit" :class "input"}
-       "Unit"
-       [:input (conj {:id "unit" :class "input"}
-                     (bind-textinput-to variable-unit))]]
-      [:button {:class "btn btn-primary"}
-       "Save variable"]
-      [:button {:class "btn btn-neutral"
-                :type "button"
-                :on-click reset-exercise-variable-form!}
-       "Cancel variable"]]
-     (when (empty? @variable-editors)
-       [:button {:class "btn btn-neutral"
-                 :type "button"
-                 :on-click #(reset! adding-variable? true)}
-        "Add exercise variable"]))
-   [:input {:class "btn btn-primary" :type "submit" :value "Save exercise"
-            :form "exercise-form"}]
-   [:button {:class "btn btn-neutral"
-             :type "button"
-             :on-click reset-exercise-form!}
-    "Cancel"]]))
+  (let [original-name (when @editing-exercise-idx (get-in @d/data [:exercises @editing-exercise-idx :name]))
+        existing-exercise-names (into #{} (map :name) (:exercises @d/data))]
+    (fn []
+      (let [name-taken? (and (not= @exercise-name original-name)
+                             (contains? existing-exercise-names @exercise-name))]
+        [:<>
+         [h2 title]
+         [:form {:id "exercise-form"
+                 :on-submit (fn [e]
+                              (.preventDefault e)
+                              (when (not name-taken?)
+                                (submit-action (d/make-exercise @exercise-name @variables))
+                                (reset-exercise-form!)))}
+          [:label {:for "exercise-name" :class (str "input"
+                                                    (when name-taken?
+                                                      " input-error"))}
+           "Name"
+           [:input (merge {:id "exercise-name" :class (str "input"
+                                                           (when name-taken?
+                                                             " input-error"))}
+                          (bind-textinput-to exercise-name))]]
+          (when name-taken?
+            [:p {:class "text-error text-sm"}
+             (str "An exercise named '" @exercise-name  "' has already been created.")])]
+         (when-let [merged-vars (not-empty (reduce-kv assoc @variables @variable-editors))]
+           [:<>
+            [:p "Variables"]
+            [:ul
+             (doall
+              (map-indexed
+               (fn [i var]
+                 ^{:key i}
+                 [:li {:class "flex justify-between items-center"}
+
+                  ;; Note: creating a new variable is also done through a
+                  ;; var-edit object, so this handles editing as well as
+                  ;; creating new variables.
+                  (if-let [var-edit (and (:original-name var) var)]
+                    (let [curr-name (-> var-edit :var :name)
+                          name-taken? (and (not= (:original-name var-edit)
+                                                 curr-name)
+                                           (some #(= curr-name %)
+                                                 (map :name @variables)))
+                          maybe-input-error (when name-taken? " input-error")
+                          creating-new-variable? (not (contains? @variables i))]
+                      [:form {:on-submit (fn [e]
+                                           (.preventDefault e)
+                                           (when (not name-taken?)
+                                             (swap! variables assoc i (get-in @variable-editors [i :var]))
+                                             (swap! variable-editors dissoc i)))}
+
+                       [:label {:class (str "input" maybe-input-error)}
+                        "Variable name"
+                        [:input {:class (str "input" maybe-input-error)
+                                 :value (get-in @variable-editors [i :var :name])
+                                 :on-change #(swap! variable-editors assoc-in [i :var :name] (-> % .-target .-value))}]]
+                       (when name-taken?
+                         [:p {:class "text-error text-sm"}
+                          (str "There is already a variable named '"
+                               curr-name "'.")])
+
+                       [:label {:class "input"}
+                        "Unit"
+                        [:input {:class "input"
+                                 :value (get-in @variable-editors [i :var :unit])
+                                 :on-change #(swap! variable-editors assoc-in [i :var :unit] (-> % .-target .-value))}]]
+                       [:button {:class "btn btn-primary"}
+                        "Save variable"]
+                       [:button {:class "btn btn-neutral"
+                                 :type "button"
+                                 :on-click #(swap! variable-editors dissoc i)}
+                        (str "Cancel "
+                             (if creating-new-variable? "variable" "edit"))]])
+                    [:<>
+                     (str (:name var) (when (not (empty? (:unit var)))
+                                        (str " (" (:unit var) ")")))
+                     (when (empty? @variable-editors)
+                       [:button {:type "button"
+                                 :class "btn btn-ghost"
+                                 :on-click #(swap! variable-editors assoc i (make-var-editor var))
+                                 :aria-label (str "Edit " (:name var) " variable")}
+                        [:> PencilIcon {:class "h-[1em]"}]])
+                     [:button {:type "button"
+                               :class "btn btn-ghost"
+                               :on-click #(swap! variables vec-dissoc i)
+                               :aria-label (str "Delete " (:name var) " variable")}
+                      [:> XMarkIcon {:class "h-[1em]"}]]])])
+               merged-vars))]])
+         (when (empty? @variable-editors)
+           [:button {:class "btn btn-neutral"
+                     :type "button"
+                     :on-click #(swap! variable-editors assoc (count @variables) (make-var-editor (d/make-var)))}
+            "Add exercise variable"])
+         [:input {:class "btn btn-primary"
+                  :type "submit"
+                  :value "Save exercise"
+                  :form "exercise-form"}]
+         [:button {:class "btn btn-neutral"
+                   :type "button"
+                   :on-click reset-exercise-form!}
+          "Cancel"]]))))
 
 (defn- create-new-exercise []
   (exercise-form (d/make-exercise "" [])

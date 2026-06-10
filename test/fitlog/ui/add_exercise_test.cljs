@@ -4,7 +4,7 @@
    [reagent.core :as r]
    [reitit.frontend.easy :as rfe]
    ["@testing-library/react" :as rtl]
-   ["@testing-library/dom" :refer [waitFor]]
+   ["@testing-library/dom" :refer [waitFor waitForElementToBeRemoved within]]
    ["@testing-library/user-event" :as user-event-mod]
    [fitlog.routes :as routes]
    [fitlog.data :as d]
@@ -49,6 +49,12 @@
     (await (click "Add exercise variable"))
     (await (type "Variable name" "Speed"))
     (await (type "Unit" "mph"))
+
+    ;; quick hack - just assert the label is right. There's no test for the
+    ;; actual behavior of this button, which would cover this, but I'm too lazy
+    ;; to make a test for it right now.
+    (await (.findByText c "Cancel variable"))
+
     (await (click "Save variable"))
     (await (click "Save exercise"))
     (await (.findByRole c "heading" #js {:text "Choose an exercise"}))
@@ -56,6 +62,34 @@
                         (= {:name "Treadmill"
                             :variables [{:name "Speed" :unit "mph"}]}
                            exercise))))))
+
+(deftest-async create-new-exercise-rejects-duplicate-names
+  (set-workouts! (d/make-workout))
+  (set-exercises! (d/make-exercisev "Treadmill"))
+  (let [user (.setup user-event)
+        c (render [add-exercise :id "0"])
+        click (make-click user c)
+        type (make-type user c)]
+    (is (= "Choose an exercise"
+           (.-textContent (.getByRole c "heading"))))
+    (await (click "Create new exercise"))
+    (await (type "Name" "Treadmill"))
+    (await (.findByText c "An exercise named 'Treadmill' has already been created."))
+    (await (click "Save exercise"))
+    (is (= ["Treadmill"]
+           (map :name (:exercises @d/data))))
+
+    (testing "changing the name to be unique allows saving again"
+      (await (type "Name" "y"))
+
+      ;; Validation error should no longer appear
+      (let [get-err-msg #(.queryByText c #"An exercise named '\w+' has already been created\.")]
+        (when (get-err-msg)
+          (await (waitForElementToBeRemoved get-err-msg))))
+
+      (await (click "Save exercise"))
+      (is (= ["Treadmill" "Treadmilly"])
+          (map :name (:exercises @d/data))))))
 
 (deftest-async allows-editing-variables-when-creating-exercise
   (set-exercises!)
@@ -71,6 +105,11 @@
     (await (type "Unit" "mph"))
     (await (click "Save variable"))
     (await (click "Edit Speed variable"))
+
+    ;; Quick tangent - the label of the cancel button should be "Cancel edit"
+    ;; instead of "Cancel variable"
+    (await (.findByText c "Cancel edit"))
+
     (await (type "Variable name" "y"))
     (await (click "Save variable"))
     (await (click "Save exercise"))
@@ -79,6 +118,37 @@
                         (= {:name "Treadmill"
                             :variables [{:name "Speedy" :unit "mph"}]}
                            exercise))))))
+
+(deftest-async exercise-form-rejects-duplicate-variable-names
+  (set-workouts! (d/make-workout))
+  (set-exercises!)
+  (let [user (.setup user-event)
+        c (render [add-exercise :id "0"])
+        click (make-click user c)
+        type (make-type user c)]
+    (is (= "Choose an exercise"
+           (.-textContent (.getByRole c "heading"))))
+    (await (click "Create new exercise"))
+    (await (type "Name" "Treadmill"))
+    (await (click "Add exercise variable"))
+    (await (type "Variable name" "Speed"))
+    (await (.findByDisplayValue c "Speed"))  ;; don't go on until it's all typed out...
+    (await (click "Save variable"))
+    (await (.findByText c "Speed"))
+    (is (empty? (.queryAllByRole (within (.getByRole c "list")) "textbox")))
+
+    (await (click "Add exercise variable"))
+    (await (type "Variable name" "Speed"))
+
+    ;; wait for the full thing to be typed out
+    (await (.findByDisplayValue c "Speed"))
+
+    (await (.findByText c "There is already a variable named 'Speed'."))
+    (await (click "Save variable")) ;; This shouldn't work
+    (await (click "Cancel variable"))
+    (await (click "Save exercise"))
+    (is (= ["Speed"]
+           (map :name (get-in @d/data [:exercises 0 :variables]))))))
 
 (deftest-async allows-removing-variables-when-creating-exercise
   (set-exercises!)
@@ -215,3 +285,18 @@
               (d/make-set row :vars {"Weight" "80"
                                      "Reps" "6"})]
              (get-in @d/data [:workouts 2 :sets]))))))
+
+(deftest-async can-edit-just-a-variable
+  (set-exercises! (d/make-exercisev "Treadmill" "Speed" "mph"))
+  (set-workouts! (d/make-workout))
+  (let [user (setup-user-events)
+        c (render [add-exercise :id "0"])
+        click (make-click user c)
+        type (make-type user c)]
+    (await (click "Edit Treadmill"))
+    (await (click "Edit Speed variable"))
+    (await (type "Variable name" "y"))
+    (await (click "Save variable"))
+    (await (click "Save exercise"))
+    (is (= [[{:name "Speedy" :unit "mph"}]]
+           (map :variables (:exercises @d/data))))))

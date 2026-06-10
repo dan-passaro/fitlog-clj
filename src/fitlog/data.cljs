@@ -14,14 +14,22 @@
   "Make an exercise variable.
 
   This is a helper for make-exercise."
-  [name unit]
-  {:name name :unit unit})
+  ([]
+   (make-var ""))
+  ([name]
+   (make-var name ""))
+  ([name unit]
+   {:name name :unit unit}))
 
 (defn make-exercise
   "Create an exercise.
   variables - a seq of variables as created by make-var"
-  [name variables]
-  {:name name :variables (vec variables)})
+  ([]
+   (make-exercise "" []))
+  ([name]
+   (make-exercise name []))
+  ([name variables]
+   {:name name :variables (vec variables)}))
 
 (defn make-exercisev
   "Make an exercise with variables.

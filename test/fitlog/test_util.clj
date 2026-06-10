@@ -15,9 +15,16 @@
        ~@body
        (catch :default e#
 
-         ;; this will output a stacktrace, although it's kind of useless because
-         ;; it doesn't use source maps and points to opaque JS
-         (js/console.error "Async test threw:" e#)
+
+         ;; Don't output stacktrace for TestingLibraryElementError, because the
+         ;; stacktrace is useless and the error message is massive and the
+         ;; stacktrace causes it to be printed twice.
+         (if (not= (.-name e#) "TestingLibraryElementError")
+
+           ;; this will output a stacktrace, although it's kind of useless
+           ;; because it doesn't use source maps and points to opaque JS
+           (js/console.error "Async test threw:" e#))
+
          (cljs.test/is false (str "async test threw: " e#))))))
 
 (defmacro with-mock-date [date-val & body]
