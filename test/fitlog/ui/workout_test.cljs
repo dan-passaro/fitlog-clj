@@ -51,8 +51,8 @@
                                             (d/make-set bench-press)])]
     (set-exercises! treadmill bench-press)
     (set-workouts! test-workout)
-    (let [c (render [workout :id "0"])
-          user (setup-user-events)
+    (let [user (setup-user-events)
+          c (render [workout :id "0"])
           enter (^:async fn [& {:keys [field value]}]
                  (await (.type user (await (.findByRole c "textbox" #js {:name field}))
                                value)))]
@@ -62,8 +62,8 @@
       (await (enter :field "Speed" :value "5.2"))
       (await (enter :field "Weight" :value "100"))
       (is (= [{:exercise treadmill :variables [[treadmill-speed "5.2"]]}
-                        {:exercise bench-press :variables [[bench-press-weight "100"]]}]
-                       (get-in @d/data [:workouts 0 :sets]))))))
+              {:exercise bench-press :variables [[bench-press-weight "100"]]}]
+             (get-in @d/data [:workouts 0 :sets]))))))
 
 (deftest-async set-variables-show-saved-data-if-available
   (let [treadmill (d/make-exercise "Treadmill" [(d/make-var "Speed" "mph")])]

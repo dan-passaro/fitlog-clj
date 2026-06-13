@@ -2,6 +2,7 @@
   (:require-macros [fitlog.test-util])
   (:require
    [reagent.core :as r]
+   [reagent.impl.batching]
    ["mockdate" :as MockDate]
    ["@testing-library/dom" :refer [waitFor]]
    ["@testing-library/react" :as rtl]
@@ -12,6 +13,17 @@
 
 ;; Alias for macros
 (def cleanup rtl/cleanup)
+
+(defn test-suite-setup
+  "This function gets run one single time before the whole test suite."
+  []
+  (fitlog.router/setup-router)
+
+  ;; regaent usually batches up renders until an animation frame, but this can
+  ;; cause issues in tests and make them flaky because the test code sends
+  ;; inputs much faster than a user would. This set! call essentially disables
+  ;; batching and makes the rerender happen synchronously.
+  (set! reagent.impl.batching/next-tick js/queueMicrotask))
 
 (defn render [elem]
   (rtl/cleanup)  ;; allow a single test to use (render) twice
