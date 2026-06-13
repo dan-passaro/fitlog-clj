@@ -4,7 +4,7 @@
    [reagent.hooks :as rh]
    [reitit.frontend.easy :as rfe]
    ["fuse.js" :as Fuse]
-   ["@heroicons/react/24/outline" :refer [MagnifyingGlassIcon PlusIcon PencilIcon XMarkIcon]]
+   ["@heroicons/react/24/outline" :refer [MagnifyingGlassIcon PlusIcon PencilIcon TrashIcon XMarkIcon]]
    [fitlog.data :as d]
    [fitlog.routes :as routes]
    [fitlog.ui.lib :refer [h2]]
@@ -55,6 +55,9 @@
     (set-exercise-form-initial! exercise))
   (reset! editing-exercise-idx exercise-idx))
 
+(defn- delete-exercise! [exercise-idx]
+  (swap! d/data update :exercises vec-dissoc exercise-idx))
+
 (defn- set-add-exercise! []
   (set-exercise-form-initial! (d/make-exercise))
   (reset! variable-editors {})
@@ -62,6 +65,13 @@
 
 (defn- js->clj-kw [v]
   (js->clj v :keywordize-keys true))
+
+(defn- icon-button [& {:keys [label icon on-click]}]
+  [:button {:class "btn btn-sm btn-ghost"
+            :type "button"
+            :on-click on-click
+            :aria-label label}
+   [:> icon {:class "h-[1em]"}]])
 
 (defn- filter-exercises!
   ([]
@@ -95,16 +105,15 @@
                          :data-testid "exercise-name"}
                   (:name exercise)]
                  [:span
-                  [:button {:class "btn btn-sm btn-ghost"
-                            :type "button"
-                            :on-click #(set-edit-exercise! i)
-                            :aria-label (str "Edit " (:name exercise))}
-                   [:> PencilIcon {:class "h-[1em]"}]]
-                  [:button {:class "btn btn-sm btn-ghost"
-                            :type "button"
-                            :aria-label (str "Add " (:name exercise))
-                            :on-click #(on-add-exercise id exercise)}
-                   [:> PlusIcon {:class "h-[1em]"}]]]])
+                  [icon-button {:label (str "Delete " (:name exercise))
+                                :icon TrashIcon
+                                :on-click #(delete-exercise! i)}]
+                  [icon-button {:label (str "Edit " (:name exercise))
+                                :icon PencilIcon
+                                :on-click #(set-edit-exercise! i)}]
+                  [icon-button {:label (str "Add " (:name exercise))
+                                :icon PlusIcon
+                                :on-click #(on-add-exercise id exercise)}]]])
               @filtered-exercises)]
             [:p "No exercises match your search."])]
          [:p (str "There are no exercises available. Create an exercise, then "
@@ -204,16 +213,12 @@
                      (str (:name var) (when (not (empty? (:unit var)))
                                         (str " (" (:unit var) ")")))
                      (when (empty? @variable-editors)
-                       [:button {:type "button"
-                                 :class "btn btn-ghost"
-                                 :on-click #(swap! variable-editors assoc i (make-var-editor var))
-                                 :aria-label (str "Edit " (:name var) " variable")}
-                        [:> PencilIcon {:class "h-[1em]"}]])
-                     [:button {:type "button"
-                               :class "btn btn-ghost"
-                               :on-click #(swap! variables vec-dissoc i)
-                               :aria-label (str "Delete " (:name var) " variable")}
-                      [:> XMarkIcon {:class "h-[1em]"}]]])])
+                       [icon-button {:label (str "Edit " (:name var) " variable")
+                                     :icon PencilIcon
+                                     :on-click #(swap! variable-editors assoc i (make-var-editor var))}])
+                     [icon-button {:label (str "Delete " (:name var) " variable")
+                                   :icon XMarkIcon
+                                   :on-click #(swap! variables vec-dissoc i)}]])])
                merged-vars))]])
          (when (empty? @variable-editors)
            [:button {:class "btn btn-neutral"

@@ -253,6 +253,18 @@
                            :variables [{:name "Speedy" :unit "mph"}]}]
                          (:exercises @d/data))))))
 
+(deftest-async allows-deleting-exercises
+  (let [bench-press (d/make-exercisev "Bench press" "Weight" "lbs")]
+    (set-workouts! (d/make-workout))
+    (set-exercises! (d/make-exercisev "Treadmill" "Speed" "mph")
+                    bench-press)
+    (let [user (setup-user-events)
+          c (render [add-exercise :id "0"])
+          click (make-click user c)]
+      (await (click "Delete Treadmill"))
+      (is (= ["Bench press"]
+             (map :name (:exercises @d/data)))))))
+
 (deftest-async prefills-set-variables-with-most-recent-previous-values
   (let [bench-press (d/make-exercisev "Bench press" "Weight" "lbs" "Reps" "#")
         row (d/make-exercisev "Row" "Weight" "lbs" "Reps" "#")]
