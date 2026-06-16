@@ -3,19 +3,19 @@
    [reagent.dom.client :as rdc]
    [fitlog.data :as d]
    [fitlog.router :as router]
-   [fitlog.nav :refer [app-view]]))
+   [fitlog.ui.app-shell :refer [app-shell]]))
 
-(defn show []
-  (if-let [view (:view (:data @app-view))]
-    (let [params (:path-params @app-view)]
-      [view params])
-    [:p "Unknown route"]))
+(defonce root (atom nil))
 
-(defonce root
-  (rdc/create-root (.getElementById js/document "app")))
+(defn- ensure-root! []
+  (or @root
+      (reset! root (rdc/create-root (.getElementById js/document "app")))))
 
-(defn ^:dev/after-load init []
+(defn ^:dev/after-load mount! []
+  (rdc/render (ensure-root!) [app-shell]))
+
+(defn ^:export init []
   (d/load-user-data)
   (add-watch d/data ::persist d/persist-data)
   (router/setup-router)
-  (rdc/render root [show]))
+  (mount!))

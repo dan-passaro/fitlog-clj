@@ -1,3 +1,4 @@
 allowBuilds:
   '@parcel/watcher': true
+  cldr-data: true
 shamefullyHoist: true

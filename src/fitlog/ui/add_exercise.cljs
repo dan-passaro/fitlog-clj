@@ -7,7 +7,7 @@
    ["@heroicons/react/24/outline" :refer [MagnifyingGlassIcon PlusIcon PencilIcon TrashIcon XMarkIcon]]
    [fitlog.data :as d]
    [fitlog.routes :as routes]
-   [fitlog.ui.lib :refer [h2]]
+   [fitlog.ui.lib :refer [icon h2]]
    [fitlog.util :refer [vec-dissoc]]))
 
 (defonce adding-exercise? (r/atom false))
@@ -66,12 +66,12 @@
 (defn- js->clj-kw [v]
   (js->clj v :keywordize-keys true))
 
-(defn- icon-button [& {:keys [label icon on-click]}]
+(defn- icon-button [& {:keys [label icon-elt on-click]}]
   [:button {:class "btn btn-sm btn-ghost"
             :type "button"
             :on-click on-click
             :aria-label label}
-   [:> icon {:class "h-[1em]"}]])
+   [icon icon-elt]])
 
 (defn- filter-exercises!
   ([]
@@ -106,13 +106,13 @@
                   (:name exercise)]
                  [:span
                   [icon-button {:label (str "Delete " (:name exercise))
-                                :icon TrashIcon
+                                :icon-elt TrashIcon
                                 :on-click #(delete-exercise! i)}]
                   [icon-button {:label (str "Edit " (:name exercise))
-                                :icon PencilIcon
+                                :icon-elt PencilIcon
                                 :on-click #(set-edit-exercise! i)}]
                   [icon-button {:label (str "Add " (:name exercise))
-                                :icon PlusIcon
+                                :icon-elt PlusIcon
                                 :on-click #(on-add-exercise id exercise)}]]])
               @filtered-exercises)]
             [:p "No exercises match your search."])]
@@ -214,10 +214,10 @@
                                         (str " (" (:unit var) ")")))
                      (when (empty? @variable-editors)
                        [icon-button {:label (str "Edit " (:name var) " variable")
-                                     :icon PencilIcon
+                                     :icon-elt PencilIcon
                                      :on-click #(swap! variable-editors assoc i (make-var-editor var))}])
                      [icon-button {:label (str "Delete " (:name var) " variable")
-                                   :icon XMarkIcon
+                                   :icon-elt XMarkIcon
                                    :on-click #(swap! variables vec-dissoc i)}]])])
                merged-vars))]])
          (when (empty? @variable-editors)

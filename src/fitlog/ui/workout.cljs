@@ -2,9 +2,11 @@
   (:require
    [reitit.frontend.easy :as rfe]
    ["@heroicons/react/24/outline" :refer [PlusIcon TrashIcon]]
+   [tick.core :as t]
    [fitlog.data :as d]
    [fitlog.util :refer [vec-dissoc vec-insert]]
    [fitlog.routes :as routes]
+   [fitlog.ui.rest-timer :refer [start-rest-timer!]]
    [fitlog.ui.lib :refer [h2 human-date-str]]))
 
 (defn- primary-btn [& {:keys [text on-click href]}]
@@ -28,9 +30,12 @@
   (swap! d/data update-in [:workouts workout-idx :sets] vec-dissoc set-idx))
 
 (defn- on-set-done-change! [workout-id set-idx event]
-  (swap! d/data assoc-in [:workouts workout-id :sets set-idx :completedAt]
-         (when (-> event .-target .-checked)
-           (-> (js/Date.) .toISOString))))
+  (let [set-done? (-> event .-target .-checked)]
+    (swap! d/data assoc-in [:workouts workout-id :sets set-idx :completedAt]
+           (when set-done?
+             (-> (js/Date.) .toISOString)))
+    (when set-done?
+      (start-rest-timer! (t/of-minutes 2)))))
 
 (defn workout [& {:keys [id]}]
   (let [id (parse-long id)

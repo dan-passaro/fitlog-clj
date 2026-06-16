@@ -4,9 +4,11 @@
    [reagent.core :as r]
    ["@testing-library/dom" :refer [waitFor waitForElementToBeRemoved within]]
    ["@testing-library/react" :as rtl]
+   [tick.core :as t]
    [fitlog.routes :as routes]
    [fitlog.data :as d]
    [fitlog.test-util :refer [deftest-async get-nav make-click render set-exercises! set-workouts! setup-user-events use-fitlog-fixtures wait-for with-mock-date]]
+   [fitlog.ui.rest-timer :refer [timer-end] :rename {timer-end rest-timer-end}]
    [fitlog.ui.workout :refer [workout]]))
 
 (use-fitlog-fixtures)
@@ -74,6 +76,7 @@
              (.-value (await (.findByRole c "textbox" #js {:name "Speed"}))))))))
 
 (deftest-async sets-can-be-marked-as-completed
+  (reset! rest-timer-end nil)
   (let [treadmill (d/make-exercisev "Treadmill" "Speed" "mph")
         now (.toISOString (js/Date.))]
     (set-workouts! (d/make-workout :sets [(d/make-set treadmill)]))
@@ -83,7 +86,10 @@
       (with-mock-date now
         (await (.click user (await (.findByRole c "checkbox" #js {:name "Done"})))))
       (is (= now
-             (get-in @d/data [:workouts 0 :sets 0 :completedAt]))))))
+             (get-in @d/data [:workouts 0 :sets 0 :completedAt])))
+      (testing "it starts the rest timer"
+        (is (= (t/>> (t/instant now) (t/of-minutes 2))
+             @rest-timer-end))))))
 
 (deftest-async sets-show-if-they-have-been-completed
   (let [treadmill (d/make-exercisev "Treadmill" "Speed" "mph")]

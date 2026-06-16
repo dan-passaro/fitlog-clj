@@ -22,3 +22,6 @@
       :else (.toLocaleString date false #js {:month "short"
                                              :weekday "long"
                                              :day "numeric"}))))
+
+(defn icon [icon-elt]
+  [:> icon-elt {:class "h-[1em]"}])
