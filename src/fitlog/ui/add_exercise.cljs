@@ -7,7 +7,7 @@
    ["@heroicons/react/24/outline" :refer [MagnifyingGlassIcon PlusIcon PencilIcon TrashIcon XMarkIcon]]
    [fitlog.data :as d]
    [fitlog.routes :as routes]
-   [fitlog.ui.lib :refer [icon h2]]
+   [fitlog.ui.lib :refer [icon icon-btn h2]]
    [fitlog.util :refer [vec-dissoc]]))
 
 (defonce adding-exercise? (r/atom false))
@@ -66,13 +66,6 @@
 (defn- js->clj-kw [v]
   (js->clj v :keywordize-keys true))
 
-(defn- icon-button [& {:keys [label icon-elt on-click]}]
-  [:button {:class "btn btn-sm btn-ghost"
-            :type "button"
-            :on-click on-click
-            :aria-label label}
-   [icon icon-elt]])
-
 (defn- filter-exercises!
   ([]
    (filter-exercises! ""))
@@ -105,15 +98,15 @@
                          :data-testid "exercise-name"}
                   (:name exercise)]
                  [:span
-                  [icon-button {:label (str "Delete " (:name exercise))
-                                :icon-elt TrashIcon
-                                :on-click #(delete-exercise! i)}]
-                  [icon-button {:label (str "Edit " (:name exercise))
-                                :icon-elt PencilIcon
-                                :on-click #(set-edit-exercise! i)}]
-                  [icon-button {:label (str "Add " (:name exercise))
-                                :icon-elt PlusIcon
-                                :on-click #(on-add-exercise id exercise)}]]])
+                  [icon-btn {:label (str "Delete " (:name exercise))
+                             :icon TrashIcon
+                             :on-click #(delete-exercise! i)}]
+                  [icon-btn {:label (str "Edit " (:name exercise))
+                             :icon PencilIcon
+                             :on-click #(set-edit-exercise! i)}]
+                  [icon-btn {:label (str "Add " (:name exercise))
+                             :icon PlusIcon
+                             :on-click #(on-add-exercise id exercise)}]]])
               @filtered-exercises)]
             [:p "No exercises match your search."])]
          [:p (str "There are no exercises available. Create an exercise, then "
@@ -213,12 +206,12 @@
                      (str (:name var) (when (not (empty? (:unit var)))
                                         (str " (" (:unit var) ")")))
                      (when (empty? @variable-editors)
-                       [icon-button {:label (str "Edit " (:name var) " variable")
-                                     :icon-elt PencilIcon
-                                     :on-click #(swap! variable-editors assoc i (make-var-editor var))}])
-                     [icon-button {:label (str "Delete " (:name var) " variable")
-                                   :icon-elt XMarkIcon
-                                   :on-click #(swap! variables vec-dissoc i)}]])])
+                       [icon-btn {:label (str "Edit " (:name var) " variable")
+                                  :icon PencilIcon
+                                  :on-click #(swap! variable-editors assoc i (make-var-editor var))}])
+                     [icon-btn {:label (str "Delete " (:name var) " variable")
+                                :icon XMarkIcon
+                                :on-click #(swap! variables vec-dissoc i)}]])])
                merged-vars))]])
          (when (empty? @variable-editors)
            [:button {:class "btn btn-neutral"

@@ -4,7 +4,7 @@
    [reagent.core :as r]
    [reagent.impl.batching]
    ["mockdate" :as MockDate]
-   ["@testing-library/dom" :refer [waitFor]]
+   ["@testing-library/dom" :refer [waitFor within]]
    ["@testing-library/react" :as rtl]
    ["@testing-library/user-event" :as user-event-mod]
    [fitlog.data :as d]
@@ -58,11 +58,20 @@
   (waitFor #(when (not (test))
               (throw (js/Error. (str "waiting for " test))))))
 
+(defn- within_ [container c]
+  (if (identical? container c)
+    container
+    (within container)))
+
 (defn make-click [user c]
-  (^:async fn [btn & {:keys [role]
-                      :or {role "button"}}]
-   (.click user (await (.findByRole c role #js {:name btn})))))
+  (^:async fn [btn & {:keys [role container]
+                      :or {role "button"
+                           container c}}]
+   (.click user (await (.findByRole (within_ container c) role #js {:name btn})))))
 
 (defn make-type [user c]
-  (^:async fn [field-name value]
-   (.type user (await (.findByRole c "textbox" #js {:name field-name})) value)))
+  (^:async fn [field-name value & {:keys [container]
+                                   :or {container c}}]
+   (.type user
+          (await (.findByRole (within_ container c) "textbox" #js {:name field-name}))
+          value)))

@@ -23,5 +23,15 @@
                                              :weekday "long"
                                              :day "numeric"}))))
 
-(defn icon [icon-elt]
-  [:> icon-elt {:class "h-[1em]"}])
+(defn icon [icon-elt {:keys [size]
+                      :or {size "1em"}}]
+  [:> icon-elt {:style {:width size :height size}}])
+
+(def ^:private icon_ icon)  ;; so icon-btn can take an :icon keyword
+
+(defn icon-btn [& {:keys [label icon on-click size]}]
+  [:button {:class "btn btn-sm btn-ghost"
+            :type "button"
+            :on-click on-click
+            :aria-label label}
+   [icon_ icon (when size {:size size})]])

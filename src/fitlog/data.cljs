@@ -62,6 +62,9 @@
    (when completed-at
      {:completedAt completed-at})))
 
+(defn set-variable [set var-name]
+  (some (fn [[var-def val]] (when (= var-name (:name var-def)) val)) (:variables set)))
+
 (defn persist-data
   "Save data to local storage."
   [key ref old-state new-state]

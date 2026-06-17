@@ -12,10 +12,10 @@
       (reset! root (rdc/create-root (.getElementById js/document "app")))))
 
 (defn ^:dev/after-load mount! []
+  (d/load-user-data)
   (rdc/render (ensure-root!) [app-shell]))
 
 (defn ^:export init []
-  (d/load-user-data)
-  (add-watch d/data ::persist d/persist-data)
   (router/setup-router)
-  (mount!))
+  (mount!)
+  (add-watch d/data ::persist d/persist-data))

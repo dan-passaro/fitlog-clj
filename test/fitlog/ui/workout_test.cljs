@@ -7,7 +7,7 @@
    [tick.core :as t]
    [fitlog.routes :as routes]
    [fitlog.data :as d]
-   [fitlog.test-util :refer [deftest-async get-nav make-click render set-exercises! set-workouts! setup-user-events use-fitlog-fixtures wait-for with-mock-date]]
+   [fitlog.test-util :refer [deftest-async get-nav make-click make-type render set-exercises! set-workouts! setup-user-events use-fitlog-fixtures wait-for with-mock-date]]
    [fitlog.ui.rest-timer :refer [timer-end] :rename {timer-end rest-timer-end}]
    [fitlog.ui.workout :refer [workout]]))
 
@@ -235,3 +235,31 @@
       (await (wait-for #(= 2 (count (.queryAllByRole c "textbox")))))
       (is (= ["3" "5"]
              (map #(.-value %) (await (.findAllByRole c "textbox"))))))))
+
+(deftest-async shows-plate-loader-for-weight-variables
+  (let [bench-press (d/make-exercisev "Bench press" "Weight" "lbs")]
+    (set-workouts! (d/make-workout
+                    :sets [(d/make-set bench-press :vars {"Weight" "125"})
+                           (d/make-set bench-press :vars {"Weight" "145"})]))
+    (let [user (setup-user-events)
+          c (render [workout :id "0"])
+          click (make-click user c)
+          type (make-type user c)
+          bench-sets (.queryAllByRole c "listitem")
+          set (fn [n] (nth bench-sets n))]
+      (is (= 2 (count bench-sets)))  ;; sanity check
+      (await (click "Plate loading guide" :container (set 0)))
+      (is (some? (.getByText (within (set 0)) "35×1 5×1")))
+
+      ;; clicking the icon again hides the guide
+      (testing "clicking the icon again hides the guide"
+        (await (click "Plate loading guide" :container (set 0)))
+        (is (nil? (.queryByText (within (set 0)) "35×1 5×1"))))
+
+      (await (click "Plate loading guide" :container (set 1)))
+      (is (some? (.getByText (within (set 1)) "45×1 5×1")))
+
+      (testing "it's reactive to the weight textbox"
+        (await (.clear user (.getByLabelText (within (set 1)) "Weight")))
+        (await (type "Weight" "155" :container (set 1)))
+        (is (some? (.getByText (within (set 1)) "45×1 10×1")))))))
