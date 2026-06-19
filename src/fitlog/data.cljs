@@ -1,5 +1,6 @@
 (ns fitlog.data
   (:require
+   [clojure.set :as set]
    [reagent.core :as r]))
 
 (def data (r/atom {:workouts [] :exercises []}))
@@ -77,3 +78,21 @@
   (when-let [data-json (js/localStorage.getItem "fitlog-data")]
     (let [data-parsed (js->clj (js/JSON.parse data-json) :keywordize-keys true)]
       (reset! data data-parsed))))
+
+(defn- rename-params [m]
+  (set/rename-keys m {:parameters :variables}))
+
+(defn- migrate-set [wset]
+  (-> wset
+      rename-params
+      (update :exercise rename-params)))
+
+(defn- migrate-workout [workout]
+  (update workout :sets (partial mapv migrate-set)))
+
+(defn migrate
+  "Read existing possibly legacy data and ensure it matches the current schema."
+  [data]
+  (-> data
+      (update :exercises (partial mapv rename-params))
+      (update :workouts (partial mapv migrate-workout))))
