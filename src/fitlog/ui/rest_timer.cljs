@@ -23,13 +23,12 @@
     (gstring/format "%d:%02d" m s)))
 
 (defn rest-timer []
-  [:div {:class "navbar bg-base-200 shadow-sm"}
-   (when-let [time-end @timer-end]
+  (when-let [time-end @timer-end]
      (let [now @now-tick]
        [:<>
         [:div {:class "flex flex-none ml-auto items-center gap-1"}
          [icon ClockIcon]
-         (fmt-timer (t/between now time-end))]]))])
+         (fmt-timer (t/between now time-end))]])))
 
 (defn- stop-ticking! []
   (when-let [id @interval-id]

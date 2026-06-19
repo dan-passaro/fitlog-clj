@@ -30,8 +30,8 @@
 (def ^:private icon_ icon)  ;; so icon-btn can take an :icon keyword
 
 (defn icon-btn [& {:keys [label icon on-click size]}]
-  [:button {:class "btn btn-sm btn-ghost"
-            :type "button"
-            :on-click on-click
-            :aria-label label}
+  [:button (merge {:class "btn btn-sm btn-ghost"
+                   :type "button"
+                   :aria-label label}
+                  (when on-click {:on-click on-click}))
    [icon_ icon (when size {:size size})]])
