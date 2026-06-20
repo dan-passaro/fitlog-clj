@@ -1,7 +1,8 @@
 (ns fitlog.data
   (:require
    [clojure.set :as set]
-   [reagent.core :as r]))
+   [reagent.core :as r]
+   [fitlog.remote-storage :as rs]))
 
 (def data (r/atom {:workouts [] :exercises []}))
 
@@ -69,13 +70,14 @@
 (defn persist-data
   "Save data to local storage."
   [key ref old-state new-state]
-  (js/localStorage.setItem "fitlog-data"
-                           (js/JSON.stringify (clj->js new-state))))
+  (rs/write-file :path "data.json"
+                 :content (js/JSON.stringify (clj->js new-state))
+                 :mime-type "application/json"))
 
-(defn load-user-data
+(defn ^:async load-user-data
   "Update data from the browser's local storage."
   []
-  (when-let [data-json (js/localStorage.getItem "fitlog-data")]
+  (when-let [data-json (await (rs/read-file "data.json"))]
     (let [data-parsed (js->clj (js/JSON.parse data-json) :keywordize-keys true)]
       (reset! data data-parsed))))
 

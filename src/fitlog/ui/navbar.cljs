@@ -1,9 +1,9 @@
 (ns fitlog.ui.navbar
   (:require
+   ["@heroicons/react/24/outline" :refer [Bars3Icon]]
    [fitlog.data :as d]
    [fitlog.ui.lib :refer [icon-btn]]
-   [fitlog.ui.rest-timer :refer [rest-timer]]
-   ["@heroicons/react/24/outline" :refer [Bars3Icon]]))
+   [fitlog.ui.rest-timer :refer [rest-timer]]))
 
 (defn- menu-item [text onclick]
   [:button {:type "button" :on-click onclick} text])

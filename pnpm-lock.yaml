@@ -23,6 +23,12 @@ importers:
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
+      remotestorage-widget:
+        specifier: ^1.8.1
+        version: 1.8.1
+      remotestoragejs:
+        specifier: 2.0.0-beta.9
+        version: 2.0.0-beta.9
       sinon:
         specifier: ^22.0.0
         version: 22.0.0
@@ -551,6 +557,10 @@ packages:
   escape-html@1.0.3:
     resolution: {integrity: sha512-NiSupZ4OeuGwr68lGIeym/ksIZMJodUGOSCZ/FSnTxcrekbvqrgdUxlJOMpijaKZVjAJrWrGs/6Jy8OMuyj9ow==}
 
+  esm@3.2.25:
+    resolution: {integrity: sha512-U1suiZ2oDVWv4zPO56S0NcR5QriEahGtdN2OR6FiOG4WJvcjBVFB0qI4+eKoWFH483PKGuLuu6V8Z4T5g63UVA==}
+    engines: {node: '>=6'}
+
   eventemitter3@4.0.7:
     resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
 
@@ -967,6 +977,12 @@ packages:
     resolution: {integrity: sha512-gNva8/6UAe8QYepIQH/jQ2qn91Qj0B9sYjMBBs3QOB8F2CXcKgLxQaJRP76sWVRQt+QU+8fAkCbCvjjMFu7Ycw==}
     engines: {node: '>= 0.8.0'}
 
+  remotestorage-widget@1.8.1:
+    resolution: {integrity: sha512-HxNu2VvIRW3wzkf5fLEzs56ySQ7+YQbRqyp3CKvmw/G+zKhRsmj06HtFoAcm3B14/nJh2SOAv3LyfKuXfUsKPw==}
+
+  remotestoragejs@2.0.0-beta.9:
+    resolution: {integrity: sha512-d09ByL7ecbZLMuzl4mQ3SXMFlsCwvvINm6l1CfdR8ylvX9E1nsq44t8gmRxzW6GUS5cwonyYA4FRXYKEhARjTA==}
+
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -1083,6 +1099,10 @@ packages:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
 
+  tv4@1.3.0:
+    resolution: {integrity: sha512-afizzfpJgvPr+eDkREK4MxJ/+r8nEEHcmitwgnPUqpaP+FpwQyadnxNoSACbgc/b1LsZYtODGoPiFxQrgJgjvw==}
+    engines: {node: '>= 0.8.0'}
+
   type-detect@4.0.8:
     resolution: {integrity: sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==}
     engines: {node: '>=4'}
@@ -1121,6 +1141,9 @@ packages:
   void-elements@2.0.1:
     resolution: {integrity: sha512-qZKX4RnBzH2ugr8Lxa7x+0V6XD9Sb/ouARtiasEQCHB1EVU4NXtmHsDDrx1dO4ne5fc3J6EW05BP1Dl0z0iung==}
     engines: {node: '>=0.10.0'}
+
+  webfinger.js@3.0.4:
+    resolution: {integrity: sha512-5c15N1n4qCm/jGJjUt32mBdPVlSugLbAztIDNBpuDfukGz2E9NhmXPfLikayn2p3kcgEZsI/UOdOwVpxOr8qJA==}
 
   which@1.3.1:
     resolution: {integrity: sha512-HxJdYWq1MTIQbJ3nw0cqssHoTNU267KlrDuGZ1WYlxDStUtKUhOaJmh112/TZmHxxUfuJqPXSOm7tDyas0OSIQ==}
@@ -1161,6 +1184,10 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+
+  xhr2@0.2.1:
+    resolution: {integrity: sha512-sID0rrVCqkVNUn8t6xuv9+6FViXjUVXq8H5rWOH2rz9fDNQEd4g0EA2XlcEdJXRz5BMEn4O1pJFdT+z4YHhoWw==}
+    engines: {node: '>= 6'}
 
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
@@ -1608,6 +1635,8 @@ snapshots:
 
   escape-html@1.0.3: {}
 
+  esm@3.2.25: {}
+
   eventemitter3@4.0.7: {}
 
   extend@3.0.2: {}
@@ -1989,6 +2018,17 @@ snapshots:
 
   readline-sync@1.4.10: {}
 
+  remotestorage-widget@1.8.1: {}
+
+  remotestoragejs@2.0.0-beta.9:
+    dependencies:
+      esm: 3.2.25
+      tv4: 1.3.0
+      webfinger.js: 3.0.4
+      xhr2: 0.2.1
+    optionalDependencies:
+      fsevents: 2.3.2
+
   require-directory@2.1.1: {}
 
   requires-port@1.0.0: {}
@@ -2136,6 +2176,8 @@ snapshots:
 
   toidentifier@1.0.1: {}
 
+  tv4@1.3.0: {}
+
   type-detect@4.0.8: {}
 
   type-detect@4.1.0: {}
@@ -2159,6 +2201,8 @@ snapshots:
 
   void-elements@2.0.1: {}
 
+  webfinger.js@3.0.4: {}
+
   which@1.3.1:
     dependencies:
       isexe: 2.0.0
@@ -2178,6 +2222,8 @@ snapshots:
   ws@8.20.0: {}
 
   ws@8.20.1: {}
+
+  xhr2@0.2.1: {}
 
   y18n@5.0.8: {}
 
