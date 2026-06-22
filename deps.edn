@@ -6,8 +6,8 @@
         henryw374/js-joda {:mvn/version "3.2.0-0"}
         reagent/reagent {:mvn/version "2.0.1" }
         metosin/reitit {:mvn/version "0.10.1"}
-        tick/tick {:mvn/version "1.0.1"}}
+        tick/tick {:mvn/version "1.0.1"}
+        thheller/shadow-cljs {:mvn/version "3.4.9"}}
  :paths ["src" "test" "resources"]
 
- :aliases {:dev {:extra-deps {thheller/shadow-cljs {:mvn/version "3.4.9"}
-                              cider/cider-nrepl {:mvn/version "0.59.0"}}}}}
+ :aliases {:dev {:extra-deps {cider/cider-nrepl {:mvn/version "0.59.0"}}}}}
