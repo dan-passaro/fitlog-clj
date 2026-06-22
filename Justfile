@@ -1,4 +1,5 @@
-tailwind_cmd := "pnpm tailwindcss -i resources/public/css/style.css -o public/css/main.css --watch"
+tailwind_base := "pnpm tailwindcss -i resources/public/css/style.css"
+tailwind_watch_cmd := tailwind_base + " -o public/css/main.css --watch"
 
 default:
     just --list
@@ -10,13 +11,13 @@ dev:
       echo "Dev server already running"
     else
       trap 'kill 0' SIGINT
-      {{tailwind_cmd}} &
+      {{tailwind_watch_cmd}} &
       pnpm shadow-cljs -A:dev watch :app &
       wait
     fi
 
 watch-css:
-    {{tailwind_cmd}}
+    {{tailwind_watch_cmd}}
 
 test:
     pnpm shadow-cljs -A:dev compile test
@@ -27,3 +28,8 @@ test-e2e:
     @# of the dev server)
     @if ! nc -z localhost 8081 ; then echo "Run the dev-server first"; exit 1; fi
     pnpm playwright test
+
+release:
+    pnpm shadow-cljs release :app
+    cp resources/public/index.html release/
+    {{tailwind_base}} -o release/css/main.css -m
