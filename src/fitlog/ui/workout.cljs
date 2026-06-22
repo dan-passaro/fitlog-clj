@@ -87,6 +87,7 @@
             [:input {:id input-id
                      :class "input"
                      :type "text"
+                     :on-focus (fn [event] (-> event .-target (.select)))
                      :inputMode "decimal"
                      :on-change #(update-set-var! id set-idx var-idx (-> % .-target .-value))
                      :value (get-in @d/data [:workouts id :sets set-idx :variables var-idx 1])
