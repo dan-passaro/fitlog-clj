@@ -6,7 +6,11 @@
   (delay
     (doto (RemoteStorage.)
       (-> .-access (.claim "fitlog" "rw"))
-      (-> .-caching (.enable "/fitlog/")))))
+      (-> .-caching (.enable "/fitlog/"))
+      (.setApiKeys
+       #js
+       {:googledrive "374510084269-3klcvo30tbdp3c6c7690bsll8dsnnmo8.apps.googleusercontent.com"
+        :dropbox "d9n168tv0fanyg5"}))))
 
 (defonce client
   (delay
