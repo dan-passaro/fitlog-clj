@@ -21,7 +21,7 @@
                        d/migrate))))
 
 (defn navbar []
-  [:div {:class "navbar bg-base-200 shadow-sm"}
+  [:div {:class "navbar bg-base-200 shadow-sm sticky top-0 z-50"}
    [:div {:class "navbar-start"}
     [:div {:class "dropdown"}
      [icon-btn {:icon Bars3Icon
