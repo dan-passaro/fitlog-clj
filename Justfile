@@ -30,11 +30,8 @@ test-e2e:
     pnpm playwright test
 
 release:
+    pnpm install --frozen-lockfile
     mkdir -p release/
     pnpm shadow-cljs release :app
     cp resources/public/index.html release/
     {{tailwind_base}} -o release/css/main.css -m
-
-release-ci: && release
-    corepack install
-    pnpm install --frozen-lockfile

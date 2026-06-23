@@ -2,9 +2,8 @@ name: CD
 
 on:
   push:
-    branches: [ "deploy", "main" ]
-
-  # Allows running this workflow manually from the Actions tab
+    branches: [ "main" ]
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -12,16 +11,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Prepare compile environment
-        run: docker build -t release-sandbox .
-      - name: Build release
-        run: |
-          docker run --rm -v "$PWD":/app -w /app release-sandbox \
-            just release-ci
-      - uses: actions/upload-pages-artifact@v3
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: actions/cache@v4
         with:
+          path: |
+            ~/.local/share/pnpm/store
+            ~/.m2/repository
+            ~/.gitlibs
+          key: deps-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'deps.edn') }}
+          restore-keys: |
+            deps-${{ runner.os }}-
+      - name: Build release via flake
+        run: nix run
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
           path: release
+
   deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.pages_url }}
