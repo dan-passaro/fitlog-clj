@@ -29,8 +29,11 @@ test-e2e:
     @if ! nc -z localhost 8081 ; then echo "Run the dev-server first"; exit 1; fi
     pnpm playwright test
 
-release:
+install-deps:
     pnpm install --frozen-lockfile
+    clj -P
+
+release: install-deps
     mkdir -p release/
     pnpm shadow-cljs release :app
     cp resources/public/index.html release/
