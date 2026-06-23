@@ -11,8 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: cachix/install-nix-action@v31
       - uses: actions/cache@v4
         with:
           path: |
@@ -22,7 +21,11 @@ jobs:
           key: deps-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'deps.edn') }}
           restore-keys: |
             deps-${{ runner.os }}-
-      - name: Build release via flake
+      - name: Populate nix store
+        run: nix develop -c true
+      - name: Retrieve app dependencies
+        run: nix develop -c just install-deps
+      - name: Build fitlog
         run: nix run
       - uses: actions/upload-pages-artifact@v3
         with:
