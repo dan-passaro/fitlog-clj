@@ -36,5 +36,6 @@ install-deps:
 release: install-deps
     mkdir -p release/
     pnpm shadow-cljs release :app
+    pnpm shadow-cljs release :sw
     cp resources/public/index.html release/
     {{tailwind_base}} -o release/css/main.css -m

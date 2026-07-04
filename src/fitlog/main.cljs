@@ -16,6 +16,9 @@
   (rdc/render (ensure-root!) [app-shell]))
 
 (defn ^:export init []
+  (-> (js/navigator.serviceWorker.register "/sw.js")
+      (.catch (fn [err]
+                (js/console.error "Service worker registration failed" err))))
   (router/setup-router)
   (mount!)
   (add-watch d/data ::persist d/persist-data))

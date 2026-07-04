@@ -10,6 +10,12 @@
                 :asset-path "/js"
                 :modules {:main {:init-fn fitlog.main/init}}
                 :release {:output-dir "release/js"}}
+          :sw {:target :browser
+               :output-dir "public"
+               :asset-path "/"
+               :modules {:sw {:init-fn fitlog.sw/init
+                              :web-worker true}}
+               :release {:output-dir "release"}}
           :test {:target :karma
                  :output-to "out/karma-tests.js"
                  :ns-regexp "-test$"}

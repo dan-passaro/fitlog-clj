@@ -47,8 +47,18 @@
   (when-not @interval-id
     (reset! interval-id (js/setInterval tick 1000))))
 
+(defn- ^:async setup-rest-timer-notification [ends-at]
+  (let [result (await (js/Notification.requestPermission))]
+    (when (= result "granted")
+      (let [^js reg (await js/navigator.serviceWorker.ready)]
+        (.. reg -active (postMessage #js {:type "START_REST_TIMER"
+                                          :endsAt (-> ends-at
+                                                      t/instant
+                                                      str)}))))))
+
 (defn start-rest-timer! [duration]
   (stop-ticking!)  ;; cleanup existing timer, if any
   (reset! timer-end (t/>> (t/now) duration))
   (reset! now-tick (t/now))
-  (start-ticking!))
+  (start-ticking!)
+  (setup-rest-timer-notification @timer-end))
