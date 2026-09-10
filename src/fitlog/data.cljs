@@ -1,3 +1,5 @@
+;; SPDX-FileCopyrightText: 2026 Dan Passaro
+;; SPDX-License-Identifier: AGPL-3.0-or-later
 (ns fitlog.data
   (:require
    [clojure.set :as set]

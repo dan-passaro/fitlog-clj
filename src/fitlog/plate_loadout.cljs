@@ -1,3 +1,5 @@
+;; SPDX-FileCopyrightText: 2026 Dan Passaro
+;; SPDX-License-Identifier: AGPL-3.0-or-later
 (ns fitlog.plate-loadout)
 
 (def ^:private plate-sizes [45 35 25 10 5 2.5])

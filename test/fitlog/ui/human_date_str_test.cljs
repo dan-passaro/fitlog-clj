@@ -1,3 +1,5 @@
+;; SPDX-FileCopyrightText: 2026 Dan Passaro
+;; SPDX-License-Identifier: AGPL-3.0-or-later
 (ns fitlog.ui.human-date-str-test
   (:require
    [cljs.test :refer [deftest is use-fixtures]]

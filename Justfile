@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Dan Passaro
+# SPDX-License-Identifier: AGPL-3.0-or-later
 tailwind_base := "pnpm tailwindcss -i resources/public/css/style.css"
 tailwind_watch_cmd := tailwind_base + " -o public/css/main.css --watch"
 

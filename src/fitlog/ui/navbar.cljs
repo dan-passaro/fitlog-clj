@@ -1,3 +1,5 @@
+;; SPDX-FileCopyrightText: 2026 Dan Passaro
+;; SPDX-License-Identifier: AGPL-3.0-or-later
 (ns fitlog.ui.navbar
   (:require
    ["@heroicons/react/24/outline" :refer [Bars3Icon]]
