@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
 
 test('has title', async ({ page }) => {
   await page.goto('.')
-  await expect(page).toHaveTitle(/Fitlog/)
+  await expect(page).toHaveTitle(/Fitpad/)
 });
 
 test('new workout button', async ({ page }) => {
