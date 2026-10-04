@@ -23,7 +23,6 @@
                        d/migrate))))
 
 (defn- show-about []
-  (js/console.log "About modal:" (js/document.getElementById "about-modal"))
   (-> (js/document.getElementById "about-modal")
       (.showModal)))
 
