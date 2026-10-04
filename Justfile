@@ -7,7 +7,7 @@ tailwind_watch_cmd := tailwind_dev_build + " --watch"
 default:
     just --list
 
-check: lint test compile
+check: lint compile test test-e2e
 
 lint:
     @# note: test isn't linted for now because of preexisting errors
