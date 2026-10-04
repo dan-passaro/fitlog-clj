@@ -18,10 +18,10 @@ dev:
     then
       echo "Dev server already running"
     else
-      trap 'kill 0' SIGINT
-      {{tailwind_watch_cmd}} &
-      pnpm shadow-cljs -A:dev watch :app &
-      wait
+      goreman -f /dev/stdin start <<-'  EOF'
+        css: {{tailwind_watch_cmd}}
+        web: pnpm shadow-cljs -A:dev watch :app
+      EOF
     fi
 
 watch-css:

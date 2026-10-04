@@ -18,11 +18,12 @@
             pkgs.jdk21_headless
             pkgs.clj-kondo
             pkgs.clojure
-            pkgs.pnpm_11
-            pkgs.nodejs_24
+            pkgs.goreman
             pkgs.just
-            pkgs.rlwrap
             pkgs.netcat
+            pkgs.nodejs_24
+            pkgs.pnpm_11
+            pkgs.rlwrap
         ];
       in {
         devShells.default = pkgs.mkShell {
