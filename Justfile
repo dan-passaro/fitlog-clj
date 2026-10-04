@@ -1,7 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Dan Passaro
 # SPDX-License-Identifier: AGPL-3.0-or-later
 tailwind_base := "pnpm tailwindcss -i resources/public/css/style.css"
-tailwind_watch_cmd := tailwind_base + " -o public/css/main.css --watch"
+tailwind_dev_build := tailwind_base + " -o public/css/main.css"
+tailwind_watch_cmd := tailwind_dev_build + " --watch"
 
 default:
     just --list
@@ -23,6 +24,9 @@ dev:
         web: pnpm shadow-cljs -A:dev watch :app
       EOF
     fi
+
+css:
+    {{tailwind_dev_build}}
 
 watch-css:
     {{tailwind_watch_cmd}}

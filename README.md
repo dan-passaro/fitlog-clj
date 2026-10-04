@@ -3,7 +3,6 @@ SPDX-FileCopyrightText: 2026 2026 Dan Passaro
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-
 # fitlog
 
 (ALPHA SOFTWARE) A client-only fitness tracker progressive webapp. Uses
@@ -17,9 +16,10 @@ To get an interactive development environment run:
 
 Then visit http://localhost:8081/ to use the app.
 
-You should also run
+Unfortunately, the CSS doesn't always live-update like it's supposed to. If you
+notice things are unstyled, try running
 
-    just watch-css
+    just css
 
 ### Tests
 
