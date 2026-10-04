@@ -32,7 +32,8 @@
     [:div {:class "dropdown"}
      [icon-btn {:icon Bars3Icon
                 :label "Tools menu"
-                :size "2em"}]
+                :size "2em"
+                :use-div-elt? true}]
      [:ul {:class "menu menu-sm dropdown-content bg-base-200 w-52 p-2 mt-3 shadow"}
       [:li
        [menu-item "Import file" select-import-file]
