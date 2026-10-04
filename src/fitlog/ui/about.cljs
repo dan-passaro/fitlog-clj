@@ -20,4 +20,7 @@
      [:a {:class "link link-primary"
           :href "https://codeberg.org/dan-passaro/fitpad"
           :target "_blank"}
-      "View source code"]]]])
+      "View source code"]]
+    [:div {:class "modal-action"}
+     [:form {:method "dialog"}
+      [:button {:class "btn"} "Close"]]]]])
