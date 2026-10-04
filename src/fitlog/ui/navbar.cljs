@@ -42,6 +42,6 @@
                 :on-change perform-import-file}]
        [menu-item "About" show-about]]]]
     [:span {:class "text-xl"}
-     "Fitlog"]]
+     "Fitpad"]]
    [:div {:class "navbar-end"}
     [rest-timer]]])
