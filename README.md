@@ -31,6 +31,12 @@ To run end-to-end tests, use
 
     just test-e2e
 
+Beforoe you run the end-to-end suite you may need to setup Playwright first
+using this command:
+
+    pnpm exec playwright install
+
+
 ### CIDER
 
 A `.dir-locals.el` file is included which makes the Emacs
