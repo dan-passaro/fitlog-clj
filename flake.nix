@@ -16,6 +16,7 @@
         pkgs = import nixpkgs { inherit system; };
         deps = [
             pkgs.jdk21_headless
+            pkgs.clj-kondo
             pkgs.clojure
             pkgs.pnpm_11
             pkgs.nodejs_24

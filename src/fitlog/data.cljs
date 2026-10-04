@@ -71,7 +71,7 @@
 
 (defn persist-data
   "Save data to local storage."
-  [key ref old-state new-state]
+  [_key _ref _old-state new-state]
   (rs/write-file :path "data.json"
                  :content (js/JSON.stringify (clj->js new-state))
                  :mime-type "application/json"))

@@ -2,10 +2,7 @@
 ;; SPDX-License-Identifier: AGPL-3.0-or-later
 (ns fitlog.nav
   (:require
-   [reagent.core :as r]
-   [reagent.dom.client :as rdc]
-   [fitlog.data :as d]
-   [fitlog.util :refer [get!]]))
+   [reagent.core :as r]))
 
 (defonce app-view (r/atom nil))
 

@@ -3,13 +3,11 @@
 (ns fitlog.ui.workouts-test
   (:require
    [cljs.test :refer-macros [deftest is]]
-   [reagent.core :as r]
    [reitit.frontend.easy :as rfe]
    ["@testing-library/dom" :refer [within]]
-   ["@testing-library/react" :as rtl]
    [fitlog.routes :as routes]
    [fitlog.data :as d]
-   [fitlog.test-util :refer [deftest-async get-nav render set-exercises! set-workouts! use-fitlog-fixtures with-mock-date]]
+   [fitlog.test-util :refer [render set-workouts! use-fitlog-fixtures with-mock-date]]
    [fitlog.ui.lib :refer [human-date-str]]
    [fitlog.ui.workouts :refer [workouts]]))
 

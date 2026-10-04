@@ -6,6 +6,12 @@ tailwind_watch_cmd := tailwind_base + " -o public/css/main.css --watch"
 default:
     just --list
 
+check: lint test compile
+
+lint:
+    @# note: test isn't linted for now because of preexisting errors
+    clj-kondo --lint src/
+
 dev:
     #!/usr/bin/env sh
     if nc -z localhost 8081
@@ -34,6 +40,10 @@ test-e2e:
 install-deps:
     pnpm install --frozen-lockfile
     clj -P
+
+compile:
+    pnpm shadow-cljs compile :app
+    pnpm shadow-cljs compile :sw
 
 release: install-deps
     mkdir -p release/

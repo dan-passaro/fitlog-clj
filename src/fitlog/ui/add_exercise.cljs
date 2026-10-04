@@ -3,13 +3,12 @@
 (ns fitlog.ui.add-exercise
   (:require
    [reagent.core :as r]
-   [reagent.hooks :as rh]
    [reitit.frontend.easy :as rfe]
    ["fuse.js" :as Fuse]
    ["@heroicons/react/24/outline" :refer [MagnifyingGlassIcon PlusIcon PencilIcon TrashIcon XMarkIcon]]
    [fitlog.data :as d]
    [fitlog.routes :as routes]
-   [fitlog.ui.lib :refer [icon icon-btn h2]]
+   [fitlog.ui.lib :refer [icon-btn h2]]
    [fitlog.util :refer [vec-dissoc]]))
 
 (defonce adding-exercise? (r/atom false))
@@ -34,7 +33,6 @@
 
 (defn- on-add-exercise [workout-id exercise]
   (let [workout-id (int workout-id)
-        workouts (sort-by :createdAt (:workouts @d/data))
         prev-set (most-recent-set-of exercise)
         new-set (apply d/make-set exercise (if prev-set
                                              [{:variables (:variables prev-set)}]
@@ -74,7 +72,7 @@
   ([query]
    (reset! filtered-exercises (->> query (.search @fuse) js->clj-kw (mapv :item)))))
 
-(defn- add-existing-exercise [id]
+(defn- add-existing-exercise []
   (reset! fuse (Fuse. (clj->js (:exercises @d/data))
                       #js {:keys #js ["name"]
                            :threshold 0.4}))
@@ -130,7 +128,7 @@
 (defn- make-var-editor [var]
   {:var var :original-name (:name var)})
 
-(defn- exercise-form [data title submit-action]
+(defn- exercise-form [title submit-action]
   (let [original-name (when @editing-exercise-idx (get-in @d/data [:exercises @editing-exercise-idx :name]))
         existing-exercise-names (into #{} (map :name) (:exercises @d/data))]
     (fn []
@@ -230,14 +228,12 @@
           "Cancel"]]))))
 
 (defn- create-new-exercise []
-  (exercise-form (d/make-exercise "" [])
-                 "Create an exercise"
+  (exercise-form "Create an exercise"
                  (partial swap! d/data update :exercises conj)))
 
 (defn- edit-exercise [exercise-idx]
   (let [exercise (get-in @d/data [:exercises exercise-idx])]
-    (exercise-form exercise
-                   (str "Edit " (:name exercise) " exercise")
+    (exercise-form (str "Edit " (:name exercise) " exercise")
                    (partial swap! d/data assoc-in [:exercises exercise-idx]))))
 
 (defn add-exercise [& {:keys [id]}]
