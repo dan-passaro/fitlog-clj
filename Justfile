@@ -11,6 +11,7 @@ check: lint test compile
 
 lint:
     @# note: test isn't linted for now because of preexisting errors
+    reuse lint
     clj-kondo --lint src/
 
 dev:

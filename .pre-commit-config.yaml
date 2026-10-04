@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 2026 Dan Passaro <dan@danpassaro.dev>
 #
-# SPDX-License-Identifier: LGPL-3.0-or-later
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
