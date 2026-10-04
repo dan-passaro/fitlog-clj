@@ -5,6 +5,7 @@
    ["@heroicons/react/24/outline" :refer [Bars3Icon]]
    [fitlog.data :as d]
    [fitlog.ui.about :refer [show-about]]
+   [fitlog.ui.export :refer [export-fitpad-data]]
    [fitlog.ui.lib :refer [icon-btn]]
    [fitlog.ui.rest-timer :refer [rest-timer]]))
 
@@ -31,9 +32,11 @@
                 :label "Tools menu"
                 :size "2em"
                 :use-div-elt? true}]
-     [:ul {:class "menu menu-sm dropdown-content bg-base-200 w-52 p-2 mt-3 shadow"}
+     [:ul {:class "menu menu-lg dropdown-content bg-base-200 w-52 p-2 mt-3 shadow"
+           :tabIndex "-1"}
       [:li
        [menu-item "Import file" select-import-file]
+       [menu-item "Export" export-fitpad-data]
        [:input {:type "file"
                 :id "import-file-input"
                 :hidden true
