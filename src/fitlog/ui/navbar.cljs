@@ -22,6 +22,11 @@
                        (js->clj :keywordize-keys true)
                        d/migrate))))
 
+(defn- show-about []
+  (js/console.log "About modal:" (js/document.getElementById "about-modal"))
+  (-> (js/document.getElementById "about-modal")
+      (.showModal)))
+
 (defn navbar []
   [:div {:class "navbar bg-base-200 shadow-sm sticky top-0 z-50"}
    [:div {:class "navbar-start"}
@@ -35,7 +40,8 @@
        [:input {:type "file"
                 :id "import-file-input"
                 :hidden true
-                :on-change perform-import-file}]]]]
+                :on-change perform-import-file}]
+       [menu-item "About" show-about]]]]
     [:span {:class "text-xl"}
      "Fitlog"]]
    [:div {:class "navbar-end"}

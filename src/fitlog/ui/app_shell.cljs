@@ -3,6 +3,7 @@
 (ns fitlog.ui.app-shell
   (:require
    [fitlog.nav :refer [app-view]]
+   [fitlog.ui.about :refer [about-modal]]
    [fitlog.ui.navbar :refer [navbar]]
    [fitlog.ui.remote-storage :refer [remote-storage-btn]]))
 
@@ -13,4 +14,5 @@
      (let [params (:path-params @app-view)]
        [view params])
      [:p "Unknown route"])
-   [remote-storage-btn]])
+   [remote-storage-btn]
+   [about-modal]])
