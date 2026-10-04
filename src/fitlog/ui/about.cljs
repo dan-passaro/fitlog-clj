@@ -2,6 +2,12 @@
 ;; SPDX-License-Identifier: AGPL-3.0-or-later
 (ns fitlog.ui.about)
 
+(defn show-about
+  "Cause the 'About' modal to appear in the app."
+  []
+  (-> (js/document.getElementById "about-modal")
+      (.showModal)))
+
 (defn about-modal []
   [:dialog {:id :about-modal
             :class :modal}

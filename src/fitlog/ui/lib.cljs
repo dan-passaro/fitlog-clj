@@ -37,6 +37,6 @@
            :type "button"
            :aria-label label}
           (when use-div-elt? {:role "button"
-                              :tabindex "0"})
+                              :tabIndex "0"})
           (when on-click {:on-click on-click}))
    [icon_ icon (when size {:size size})]])

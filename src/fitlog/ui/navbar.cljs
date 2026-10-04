@@ -4,6 +4,7 @@
   (:require
    ["@heroicons/react/24/outline" :refer [Bars3Icon]]
    [fitlog.data :as d]
+   [fitlog.ui.about :refer [show-about]]
    [fitlog.ui.lib :refer [icon-btn]]
    [fitlog.ui.rest-timer :refer [rest-timer]]))
 
@@ -21,10 +22,6 @@
                        js/JSON.parse
                        (js->clj :keywordize-keys true)
                        d/migrate))))
-
-(defn- show-about []
-  (-> (js/document.getElementById "about-modal")
-      (.showModal)))
 
 (defn navbar []
   [:div {:class "navbar bg-base-200 shadow-sm sticky top-0 z-50"}
