@@ -11,7 +11,8 @@
                 :output-dir "public/js"
                 :asset-path "/js"
                 :modules {:main {:init-fn fitlog.main/init}}
-                :release {:output-dir "release/js"}}
+                :release {:output-dir "release/js"}
+                :build-hooks [(fitlog.build/insert-analytics)]}
           :sw {:target :browser
                :output-dir "public"
                :asset-path "/"
