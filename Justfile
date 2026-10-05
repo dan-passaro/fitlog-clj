@@ -48,10 +48,8 @@ install-deps:
 
 compile:
     pnpm shadow-cljs compile :app
-    pnpm shadow-cljs compile :sw
 
 release: install-deps
     mkdir -p release/
     pnpm shadow-cljs release :app
-    pnpm shadow-cljs release :sw
     {{tailwind_base}} -o release/css/main.css -m
