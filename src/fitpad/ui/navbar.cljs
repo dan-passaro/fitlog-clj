@@ -1,0 +1,48 @@
+;; SPDX-FileCopyrightText: 2026 Dan Passaro
+;; SPDX-License-Identifier: AGPL-3.0-or-later
+(ns fitpad.ui.navbar
+  (:require
+   ["@heroicons/react/24/outline" :refer [Bars3Icon]]
+   [fitpad.data :as d]
+   [fitpad.ui.about :refer [show-about]]
+   [fitpad.ui.export :refer [export-fitpad-data]]
+   [fitpad.ui.lib :refer [icon-btn]]
+   [fitpad.ui.rest-timer :refer [rest-timer]]))
+
+(defn- menu-item [text onclick]
+  [:button {:type "button" :on-click onclick} text])
+
+(defn- select-import-file []
+  (-> (.getElementById js/document "import-file-input")
+      .click))
+
+(defn- ^:async perform-import-file [evt]
+  (let [file (-> evt .-target .-files (aget 0))
+        text (await (.text file))]
+    (reset! d/data (-> text
+                       js/JSON.parse
+                       (js->clj :keywordize-keys true)
+                       d/migrate))))
+
+(defn navbar []
+  [:div {:class "navbar bg-base-200 shadow-sm sticky top-0 z-50"}
+   [:div {:class "navbar-start"}
+    [:div {:class "dropdown"}
+     [icon-btn {:icon Bars3Icon
+                :label "Tools menu"
+                :size "2em"
+                :use-div-elt? true}]
+     [:ul {:class "menu menu-lg dropdown-content bg-base-200 w-52 p-2 mt-3 shadow"
+           :tabIndex "-1"}
+      [:li
+       [menu-item "Import file" select-import-file]
+       [menu-item "Export" export-fitpad-data]
+       [:input {:type "file"
+                :id "import-file-input"
+                :hidden true
+                :on-change perform-import-file}]
+       [menu-item "About" show-about]]]]
+    [:span {:class "text-xl"}
+     "Fitpad"]]
+   [:div {:class "navbar-end"}
+    [rest-timer]]])

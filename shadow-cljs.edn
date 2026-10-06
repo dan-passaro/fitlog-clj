@@ -10,9 +10,9 @@
  :builds {:app {:target     :browser
                 :output-dir "public/js"
                 :asset-path "/js"
-                :modules {:main {:init-fn fitlog.main/init}}
+                :modules {:main {:init-fn fitpad.main/init}}
                 :release {:output-dir "release/js"}
-                :build-hooks [(fitlog.build/insert-analytics)]}
+                :build-hooks [(fitpad.build/insert-analytics)]}
           :test {:target :karma
                  :output-to "out/karma-tests.js"
                  :ns-regexp "-test$"}

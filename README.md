@@ -3,7 +3,7 @@ SPDX-FileCopyrightText: 2026 2026 Dan Passaro
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
-# fitlog
+# fitpad
 
 (ALPHA SOFTWARE) A client-only fitness tracker progressive webapp. Uses
 [remoteStorage](https://remotestorage.io/) to provide cross-device sync.
