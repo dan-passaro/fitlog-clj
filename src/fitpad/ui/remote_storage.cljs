@@ -9,8 +9,8 @@
 
 (defonce rs-instance
   (let [rs (RemoteStorage.)]
-    (-> rs .-access (.claim "fitpad" "rw"))
-    (-> rs .-caching (.enable "/fitpad/"))
+    (-> rs .-access (.claim "fitlog" "rw"))
+    (-> rs .-caching (.enable "/fitlog/"))
     rs))
 
 (defn- enable-cloud-sync [el]
