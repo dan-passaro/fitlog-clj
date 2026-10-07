@@ -15,10 +15,10 @@
       let
         pkgs = import nixpkgs { inherit system; };
         deps = [
-            pkgs.jdk21_headless
             pkgs.clj-kondo
             pkgs.clojure
             pkgs.goreman
+            pkgs.jdk21_headless
             pkgs.just
             pkgs.netcat
             pkgs.nodejs_24

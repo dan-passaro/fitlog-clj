@@ -14,7 +14,8 @@
                  ;; This should be temporary. Unless it turns out someone else
                  ;; is actually using this, the GitHub Pages deployment will be
                  ;; shut down: it's being migrated to Codeberg Pages.
-                 (if (System/getenv "GITHUB_ACTION")
+                 (if (and (System/getenv "GITHUB_ACTION")
+                          (not (System/getenv "FORGEJO_ACTION")))
                    "-github"
                    "")
 

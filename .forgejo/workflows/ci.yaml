@@ -1,0 +1,79 @@
+# SPDX-FileCopyrightText: 2026 2026 Dan Passaro
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: codeberg-small-lazy
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Lix
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSfL https://install.lix.systems/lix \
+            | sh -s -- install linux --init none --no-confirm --extra-conf "sandbox = false"
+
+          # make nix command available
+          . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+          nix --version
+
+      - name: Cache nix
+        uses: actions/cache@v6.1.0
+        with: &nix-cache-params
+          key: ${{ runner.os }}-nix-${{ hashFiles('flake.lock') }}
+          path: |
+            /nix/store
+            /nix/var/nix
+
+      - name: Fetch nix dependencies
+        run: |
+          nix develop --command true
+
+      - name: Cache maven
+        uses: actions/cache@v6.1.0
+        with:
+          key: ${{ runner.os }}-maven-${{ hashFiles('deps.edn') }}
+          path: ~/.m2/repository
+
+      - name: Cache node_modules
+        uses: actions/cache@v6.1.0
+        with:
+          key: ${{ runner.os }}-node-${{ hashFiles('pnpm-lock.yaml') }}
+          path: node_modules
+
+      - name: Fetch app dependencies
+        run: |
+          nix develop --command just install-deps
+
+      - name: Build app
+        run: |
+          nix develop --command just release
+
+      - uses: actions/upload-artifact@v3.2.2
+        with:
+          path: release
+
+  deploy:
+    runs-on: codeberg-small-lazy
+    needs: build
+    if: ${{ forge.ref == 'refs/heads/main' }}
+    steps:
+      - uses: actions/download-artifact@v3
+      - name: Add _redirects file
+        run: |
+          cat <<'EOF' > artifact/_redirects
+          //www.fitpad.app/* https://fitpad.app/:splat 302!
+          EOF
+      - uses: https://codeberg.org/git-pages/action@v2
+        with: &deploy-params
+          site: https://fitpad.app/
+          server: codeberg.page
+          token: ${{ forge.token }}
+          source: artifact/
+      - uses: https://codeberg.org/git-pages/action@v2
+        with:
+          <<: *deploy-params
+          site: https://www.fitpad.app/
