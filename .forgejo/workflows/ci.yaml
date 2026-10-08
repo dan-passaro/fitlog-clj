@@ -23,7 +23,7 @@ jobs:
       - name: Cache nix
         uses: actions/cache@v6.1.0
         with: &nix-cache-params
-          key: ${{ runner.os }}-nix-${{ hashFiles('flake.lock') }}
+          key: ${{ runner.os }}-nix-${{ hashFiles('flake.lock,flake.nix') }}
           path: |
             /nix/store
             /nix/var/nix
